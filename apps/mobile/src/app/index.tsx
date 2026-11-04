@@ -185,10 +185,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  // Bounded content inside the hero; flex: 1 fills available row width up to maxWidth
+  // Bounded content inside the hero; flex: 1 fills available row width up to maxWidth.
+  // minWidth: 0 overrides the CSS default min-width: auto so this item can shrink below
+  // its text content width at narrow viewports (320px, 390px) and text wraps correctly.
   heroContent: {
     flex: 1,
     maxWidth: 960,
+    minWidth: 0,
     paddingHorizontal: 24,
     paddingTop: 20,
     gap: 16,
@@ -229,10 +232,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexGrow: 1,
   },
-  // Bounded selection content; flex: 1 fills row width up to maxWidth
+  // Bounded selection content; flex: 1 fills row width up to maxWidth.
+  // minWidth: 0 — same reason as heroContent.
   selectionContent: {
     flex: 1,
     maxWidth: 960,
+    minWidth: 0,
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 48,

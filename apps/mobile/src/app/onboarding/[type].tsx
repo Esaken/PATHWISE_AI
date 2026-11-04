@@ -106,10 +106,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexGrow: 1,
   },
-  // Bounded content column; flex: 1 fills row width up to maxWidth
+  // Bounded content column; flex: 1 fills row width up to maxWidth.
+  // minWidth: 0 overrides CSS default min-width: auto so this item can shrink
+  // below its text content width at narrow viewports and text wraps correctly.
   centerContent: {
     flex: 1,
     maxWidth: 720,
+    minWidth: 0,
   },
   header: {
     paddingHorizontal: 20,
