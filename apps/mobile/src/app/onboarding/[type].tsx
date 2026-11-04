@@ -96,9 +96,10 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
   },
-  // Scroll content grows to fill; centering is handled by centerRow inside
+  // width: '100%' gives children a defined width anchor on web so text wraps correctly.
   scroll: {
     flexGrow: 1,
+    width: '100%',
   },
   // Row wrapper: centers centerContent without width: '100%'
   centerRow: {

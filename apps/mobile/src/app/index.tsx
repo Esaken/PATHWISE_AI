@@ -171,9 +171,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BrandColors.surface,
   },
-  // ScrollView content: simply grow to fill; no width constraint here
+  // ScrollView content: width: '100%' gives children a defined width anchor on web so
+  // text wraps correctly and flex: 1 in row wrappers has a real size to fill.
   scroll: {
     flexGrow: 1,
+    width: '100%',
   },
   // Hero purple band: stretches to full scroll width by default (column-direction stretch)
   hero: {
