@@ -60,4 +60,5 @@ export type WizardState = {
   answers: OnboardingAnswers;
   errors: StepErrors;
   editingFromReview: boolean;
+  answerSnapshot: OnboardingAnswers | null;
 };

@@ -132,7 +132,8 @@ function wizardReducer(state: WizardState, action: Action): WizardState {
         return { ...state, errors: action.errors };
       }
       if (state.editingFromReview) {
-        return { ...state, step: 'review', editingFromReview: false, errors: {} };
+        // Save: commit the edited answers (already in state.answers) and clear snapshot.
+        return { ...state, step: 'review', editingFromReview: false, errors: {}, answerSnapshot: null };
       }
       const nextMap: Record<WizardStep, WizardStep> = {
         1: 2,
@@ -146,7 +147,15 @@ function wizardReducer(state: WizardState, action: Action): WizardState {
 
     case 'BACK': {
       if (state.editingFromReview) {
-        return { ...state, step: 'review', editingFromReview: false, errors: {} };
+        // Cancel: restore answers from the snapshot taken when edit mode opened.
+        return {
+          ...state,
+          step: 'review',
+          editingFromReview: false,
+          errors: {},
+          answers: state.answerSnapshot ?? state.answers,
+          answerSnapshot: null,
+        };
       }
       const backMap: Partial<Record<WizardStep, WizardStep>> = { 2: 1, 3: 2, review: 3 };
       const prevStep = backMap[state.step];
@@ -154,13 +163,22 @@ function wizardReducer(state: WizardState, action: Action): WizardState {
     }
 
     case 'EDIT_FROM_REVIEW':
-      return { ...state, step: action.step, editingFromReview: true, errors: {} };
+      // Snapshot current answers so Cancel can restore them.
+      return { ...state, step: action.step, editingFromReview: true, errors: {}, answerSnapshot: state.answers };
 
     case 'SUBMIT':
       return { ...state, step: 'complete', errors: {} };
 
     case 'NAV_TO_STEP':
-      return { ...state, step: action.step, editingFromReview: false, errors: {} };
+      // Browser Back/Forward. If editing, treat as implicit Cancel and restore snapshot.
+      return {
+        ...state,
+        step: action.step,
+        editingFromReview: false,
+        errors: {},
+        answers: state.answerSnapshot ?? state.answers,
+        answerSnapshot: null,
+      };
 
     default:
       return state;
@@ -649,6 +667,7 @@ export default function OnboardingWizard() {
     answers: makeInitialAnswers(learnerType ?? 'high-school'),
     errors: {},
     editingFromReview: false,
+    answerSnapshot: null,
   });
 
   const handleBackStep1 = useCallback(() => {

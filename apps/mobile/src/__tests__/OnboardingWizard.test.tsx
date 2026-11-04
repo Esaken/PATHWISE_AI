@@ -529,6 +529,161 @@ describe('privacy', () => {
   });
 });
 
+// ─── T2-B4: Review edit Save vs Cancel ───────────────────────────────────────
+// Regression suite for the snapshot/restore fix. Cancel must restore the
+// pre-edit answers; Save must commit the changes.
+
+describe('Review edit Save and Cancel (T2-B4)', () => {
+  // ── High-school helpers ──────────────────────────────────────────────────
+
+  async function hsReachReview(): Promise<[Api, ReturnType<typeof setupUser>]> {
+    setLearnerType('high-school');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Prepare for college'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Technology & Computing'));
+    await user.press(api.getByText('Free only'));
+    await user.press(api.getByTestId('step-next-button'));
+    return [api, user];
+  }
+
+  // ── High-school: step 1 (grade) ──────────────────────────────────────────
+
+  it('HS step-1 Cancel discards grade change and review shows original grade', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-grade-edit'));
+    await user.press(api.getByText('12th grade')); // change from 10th to 12th
+    await user.press(api.getByText('Cancel'));      // discard
+    expect(api.getByText('10th grade')).toBeTruthy();
+  });
+
+  it('HS step-1 Save commits grade change and review shows new grade', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-grade-edit'));
+    await user.press(api.getByText('12th grade'));
+    await user.press(api.getByTestId('step-next-button')); // Save
+    expect(api.getByText('12th grade')).toBeTruthy();
+  });
+
+  it('HS step-1 Cancel does not alter other answers', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-grade-edit'));
+    await user.press(api.getByText('12th grade'));
+    await user.press(api.getByText('Cancel'));
+    expect(api.getByText('Prepare for college')).toBeTruthy();
+    expect(api.getByText('Technology & Computing')).toBeTruthy();
+    expect(api.getByText('Free only')).toBeTruthy();
+  });
+
+  // ── High-school: step 2 (goal) ───────────────────────────────────────────
+
+  it('HS step-2 Cancel discards goal change and review shows original goal', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-goal-edit'));
+    await user.press(api.getByText('Build career skills'));
+    await user.press(api.getByText('Back')); // Cancel in step 2
+    expect(api.getByText('Prepare for college')).toBeTruthy();
+  });
+
+  it('HS step-2 Save commits goal change', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-goal-edit'));
+    await user.press(api.getByText('Build career skills'));
+    await user.press(api.getByTestId('step-next-button')); // Save
+    expect(api.getByText('Build career skills')).toBeTruthy();
+  });
+
+  // ── High-school: step 3 (career interest) ───────────────────────────────
+
+  it('HS step-3 Cancel discards career interest change', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-career-interest-edit'));
+    await user.press(api.getByText('Healthcare & Medicine'));
+    await user.press(api.getByText('Back')); // Cancel in step 3
+    expect(api.getByText('Technology & Computing')).toBeTruthy();
+  });
+
+  it('HS step-3 Save commits career interest change', async () => {
+    const [api, user] = await hsReachReview();
+    await user.press(api.getByTestId('review-career-interest-edit'));
+    await user.press(api.getByText('Healthcare & Medicine'));
+    await user.press(api.getByTestId('step-next-button')); // Save
+    expect(api.getByText('Healthcare & Medicine')).toBeTruthy();
+  });
+
+  // ── Validation errors cleared on Cancel ─────────────────────────────────
+
+  it('validation errors from edit mode are cleared after Cancel', async () => {
+    // Adult step 1: change to something-else, attempt Save with blank text,
+    // then Cancel — the error must not appear on Review.
+    setLearnerType('adult');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('Technology or computing skills'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Build general skills'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Free only'));
+    await user.press(api.getByTestId('step-next-button')); // reach review
+
+    await user.press(api.getByTestId('review-career-goal-edit'));
+    await user.press(api.getByText('Something else')); // triggers careerGoalOther field
+    await user.press(api.getByTestId('step-next-button')); // Save fails — blank other text
+    expect(api.queryByText(/please describe your goal/i)).toBeTruthy();
+
+    await user.press(api.getByText('Cancel')); // discard
+    // Back on review: no error text visible and original goal restored
+    expect(api.queryByText(/please describe your goal/i)).toBeNull();
+    expect(api.getByText('Technology or computing skills')).toBeTruthy();
+  });
+
+  // ── University: optional institution field ───────────────────────────────
+
+  it('University step-3 Cancel discards study area change', async () => {
+    setLearnerType('university');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('Engineering'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Build job-relevant skills'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Technology & Computing'));
+    await user.press(api.getByText('Up to $25'));
+    await user.press(api.getByTestId('step-next-button')); // reach review
+
+    await user.press(api.getByTestId('review-study-area-edit'));
+    await user.press(api.getByText('Business & Management'));
+    await user.press(api.getByText('Cancel'));
+    expect(api.getByText('Engineering')).toBeTruthy();
+  });
+
+  // ── Adult: something-else text field ────────────────────────────────────
+
+  it('Adult step-1 Cancel discards something-else text entry', async () => {
+    setLearnerType('adult');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('Technology or computing skills'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Build general skills'));
+    await user.press(api.getByTestId('step-next-button'));
+    await user.press(api.getByText('Free only'));
+    await user.press(api.getByTestId('step-next-button')); // reach review
+
+    await user.press(api.getByTestId('review-career-goal-edit'));
+    await user.press(api.getByText('Something else'));
+    // Type into the other-goal field
+    const otherInput = api.getByTestId('career-goal-other-input');
+    await user.type(otherInput, 'Learning a new language');
+    await user.press(api.getByText('Cancel'));
+    // Review should show the original goal, not the edited text
+    expect(api.getByText('Technology or computing skills')).toBeTruthy();
+  });
+});
+
 // ─── T2-B1: ChoiceGroup roving tabIndex ──────────────────────────────────────
 // RNTL notes:
 //  - tabIndex appears in r.props.tabIndex (passed through, no native mapping)
@@ -759,6 +914,24 @@ describe('browser history synchronization (T2-B2)', () => {
       capturedPopstateHandler?.({ state: { someOtherKey: true } });
     });
     expect(api.getByText(/what is your primary goal/i)).toBeTruthy();
+  });
+
+  it('edit Cancel does not call history.back() (edit paths do not touch browser history)', async () => {
+    // Edit-cancel goes through dispatch(BACK) not history.back(), so no history desync.
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2
+    await user.press(api.getByText('Prepare for college'));
+    await user.press(api.getByTestId('step-next-button')); // step 3
+    await user.press(api.getByText('Technology & Computing'));
+    await user.press(api.getByText('Free only'));
+    await user.press(api.getByTestId('step-next-button')); // review
+    mockHistoryBack.mockClear();
+    await user.press(api.getByTestId('review-grade-edit'));
+    await user.press(api.getByText('12th grade'));
+    await user.press(api.getByText('Cancel'));
+    expect(mockHistoryBack).not.toHaveBeenCalled();
   });
 });
 
