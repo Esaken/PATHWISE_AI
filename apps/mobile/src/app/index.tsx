@@ -1,7 +1,9 @@
+import { useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import {
+  type KeyDownEvent,
   Pressable,
+  type PressableInstance,
   ScrollView,
   StyleSheet,
   Text,
@@ -40,35 +42,65 @@ const PATHWAYS: {
   },
 ];
 
-function PathwayCard({
-  pathway,
-  selected,
-  onSelect,
-  extraStyle,
-}: {
+type PathwayCardProps = {
   pathway: (typeof PATHWAYS)[number];
   selected: boolean;
   onSelect: () => void;
+  /** Arrow-key callback: move selection to the prev or next radio (ARIA radio-group pattern). */
+  onNavigate: (direction: 'prev' | 'next') => void;
   extraStyle?: object;
-}) {
+  // React 19: ref is a regular prop — no forwardRef wrapper required.
+  ref?: React.Ref<PressableInstance>;
+};
+
+function PathwayCard({ pathway, selected, onSelect, onNavigate, extraStyle, ref }: PathwayCardProps) {
   const [focused, setFocused] = useState(false);
+
+  function handleKeyDown(e: KeyDownEvent) {
+    switch (e.nativeEvent.key) {
+      case ' ':
+        // div[role=radio] does not receive Space as a click automatically; handle explicitly.
+        e.preventDefault();
+        onSelect();
+        break;
+      case 'ArrowDown':
+      case 'ArrowRight':
+        e.preventDefault();
+        onNavigate('next');
+        break;
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        e.preventDefault();
+        onNavigate('prev');
+        break;
+    }
+  }
 
   return (
     <Pressable
+      ref={ref}
+      // role + aria-checked are the RN 0.70+ preferred API and map directly to
+      // ARIA attributes in React Native Web. The older accessibilityRole +
+      // accessibilityState.checked failed to produce aria-checked in the DOM
+      // for this RN version (confirmed by QA4 accessibility tree inspection).
+      role="radio"
+      aria-checked={selected}
+      // Roving tabIndex: selected card stays in the natural tab order;
+      // others are skipped by Tab but remain focusable via arrow keys.
+      tabIndex={selected ? 0 : -1}
+      accessibilityLabel={pathway.label}
+      accessibilityHint={pathway.description}
+      onPress={onSelect}
+      onKeyDown={handleKeyDown}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={({ pressed }) => [
         styles.card,
         extraStyle,
         selected && styles.cardSelected,
         focused && styles.cardFocused,
         pressed && styles.cardPressed,
-      ]}
-      onPress={onSelect}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected }}
-      accessibilityLabel={pathway.label}
-      accessibilityHint={pathway.description}>
+      ]}>
       <View style={styles.cardTop}>
         <View
           style={styles.iconCircle}
@@ -95,8 +127,20 @@ export default function WelcomeScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
 
+  // One ref per card; used to move DOM focus when arrow keys change selection.
+  const cardRefs = useRef<(PressableInstance | null)[]>([null, null, null]);
+
   function handleGetStarted() {
     router.push({ pathname: '/onboarding/[type]', params: { type: selected } });
+  }
+
+  function handleNavigate(currentId: LearnerType, direction: 'prev' | 'next') {
+    const idx = PATHWAYS.findIndex((p) => p.id === currentId);
+    const len = PATHWAYS.length;
+    const newIdx = direction === 'next' ? (idx + 1) % len : (idx - 1 + len) % len;
+    setSelected(PATHWAYS[newIdx].id);
+    // Move DOM focus to the newly selected card so keyboard navigation is visible.
+    cardRefs.current[newIdx]?.focus();
   }
 
   return (
@@ -132,15 +176,19 @@ export default function WelcomeScreen() {
             <Text style={styles.sectionHeading}>Choose your path</Text>
 
             <View
-              style={[styles.cardsContainer, isDesktop && styles.cardsDesktop]}
-              accessibilityRole="radiogroup"
-              accessibilityLabel="Choose your learning path">
-              {PATHWAYS.map((pathway) => (
+              role="radiogroup"
+              accessibilityLabel="Choose your learning path"
+              style={[styles.cardsContainer, isDesktop && styles.cardsDesktop]}>
+              {PATHWAYS.map((pathway, idx) => (
                 <PathwayCard
                   key={pathway.id}
+                  ref={(r) => {
+                    cardRefs.current[idx] = r;
+                  }}
                   pathway={pathway}
                   selected={selected === pathway.id}
                   onSelect={() => setSelected(pathway.id)}
+                  onNavigate={(dir) => handleNavigate(pathway.id, dir)}
                   extraStyle={isDesktop ? styles.cardDesktop : undefined}
                 />
               ))}
