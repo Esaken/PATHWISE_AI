@@ -44,10 +44,12 @@ function PathwayCard({
   pathway,
   selected,
   onSelect,
+  extraStyle,
 }: {
   pathway: (typeof PATHWAYS)[number];
   selected: boolean;
   onSelect: () => void;
+  extraStyle?: object;
 }) {
   const [focused, setFocused] = useState(false);
 
@@ -55,6 +57,7 @@ function PathwayCard({
     <Pressable
       style={({ pressed }) => [
         styles.card,
+        extraStyle,
         selected && styles.cardSelected,
         focused && styles.cardFocused,
         pressed && styles.cardPressed,
@@ -101,55 +104,62 @@ export default function WelcomeScreen() {
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}>
-        {/* Hero */}
+        {/* Hero — purple band spans full width; content is centered via a row wrapper */}
         <View style={styles.hero}>
-          <SafeAreaView edges={['top']} style={styles.heroInner}>
-            <View style={styles.brandRow} accessibilityRole="header">
-              <View
-                style={styles.logoCircle}
-                accessibilityElementsHidden
-                importantForAccessibility="no">
-                <Text style={styles.logoEmoji}>🎓</Text>
+          <SafeAreaView edges={['top']}>
+            <View style={styles.heroRow}>
+              <View style={styles.heroContent}>
+                <View style={styles.brandRow} accessibilityRole="header">
+                  <View
+                    style={styles.logoCircle}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no">
+                    <Text style={styles.logoEmoji}>🎓</Text>
+                  </View>
+                  <Text style={styles.brandName}>Pathwise AI</Text>
+                </View>
+                <Text style={styles.missionText}>
+                  Find affordable learning and career opportunities.
+                </Text>
               </View>
-              <Text style={styles.brandName}>Pathwise AI</Text>
             </View>
-            <Text style={styles.missionText}>
-              Find affordable learning and career opportunities.
-            </Text>
           </SafeAreaView>
         </View>
 
-        {/* Selection */}
-        <View style={[styles.selectionSection, isDesktop && styles.selectionSectionDesktop]}>
-          <Text style={styles.sectionHeading}>Choose your path</Text>
+        {/* Pathway selection — row wrapper centers content without width: '100%' */}
+        <View style={styles.selectionRow}>
+          <View style={[styles.selectionContent, isDesktop && styles.selectionContentDesktop]}>
+            <Text style={styles.sectionHeading}>Choose your path</Text>
 
-          <View
-            style={[styles.cardsContainer, isDesktop && styles.cardsDesktop]}
-            accessibilityRole="radiogroup"
-            accessibilityLabel="Choose your learning path">
-            {PATHWAYS.map((pathway) => (
-              <PathwayCard
-                key={pathway.id}
-                pathway={pathway}
-                selected={selected === pathway.id}
-                onSelect={() => setSelected(pathway.id)}
-              />
-            ))}
+            <View
+              style={[styles.cardsContainer, isDesktop && styles.cardsDesktop]}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Choose your learning path">
+              {PATHWAYS.map((pathway) => (
+                <PathwayCard
+                  key={pathway.id}
+                  pathway={pathway}
+                  selected={selected === pathway.id}
+                  onSelect={() => setSelected(pathway.id)}
+                  extraStyle={isDesktop ? styles.cardDesktop : undefined}
+                />
+              ))}
+            </View>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.ctaButton,
+                ctaFocused && styles.ctaButtonFocused,
+                pressed && styles.ctaButtonPressed,
+              ]}
+              onPress={handleGetStarted}
+              onFocus={() => setCtaFocused(true)}
+              onBlur={() => setCtaFocused(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Get started">
+              <Text style={styles.ctaText}>Get started</Text>
+            </Pressable>
           </View>
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.ctaButton,
-              ctaFocused && styles.ctaButtonFocused,
-              pressed && styles.ctaButtonPressed,
-            ]}
-            onPress={handleGetStarted}
-            onFocus={() => setCtaFocused(true)}
-            onBlur={() => setCtaFocused(false)}
-            accessibilityRole="button"
-            accessibilityLabel="Get started">
-            <Text style={styles.ctaText}>Get started</Text>
-          </Pressable>
         </View>
       </ScrollView>
     </View>
@@ -161,20 +171,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BrandColors.surface,
   },
+  // ScrollView content: simply grow to fill; no width constraint here
   scroll: {
     flexGrow: 1,
   },
+  // Hero purple band: stretches to full scroll width by default (column-direction stretch)
   hero: {
     backgroundColor: BrandColors.heroBg,
     paddingBottom: 48,
   },
-  heroInner: {
+  // Row wrapper: centers heroContent without relying on width: '100%'
+  heroRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  // Bounded content inside the hero; flex: 1 fills available row width up to maxWidth
+  heroContent: {
+    flex: 1,
+    maxWidth: 960,
     paddingHorizontal: 24,
     paddingTop: 20,
     gap: 16,
-    maxWidth: 960,
-    alignSelf: 'center',
-    width: '100%',
   },
   brandRow: {
     flexDirection: 'row',
@@ -206,16 +223,22 @@ const styles = StyleSheet.create({
     color: BrandColors.textSubtleOnPurple,
     maxWidth: 480,
   },
-  selectionSection: {
+  // Row wrapper for the selection area; same centering pattern as heroRow
+  selectionRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexGrow: 1,
+  },
+  // Bounded selection content; flex: 1 fills row width up to maxWidth
+  selectionContent: {
+    flex: 1,
+    maxWidth: 960,
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 48,
     gap: 20,
-    maxWidth: 960,
-    alignSelf: 'center',
-    width: '100%',
   },
-  selectionSectionDesktop: {
+  selectionContentDesktop: {
     paddingHorizontal: 32,
     paddingTop: 40,
     paddingBottom: 64,
@@ -246,6 +269,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     minHeight: 44,
+  },
+  // flex:1 + flexBasis:0 gives equal widths; minWidth:0 allows shrinking below content size on web
+  cardDesktop: {
+    flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
   },
   cardSelected: {
     borderColor: BrandColors.cardBorderSelected,
@@ -314,7 +343,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 54,
-    alignSelf: 'stretch',
     shadowColor: BrandColors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

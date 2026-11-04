@@ -21,7 +21,6 @@ export default function OnboardingPlaceholder() {
   const { type } = useLocalSearchParams<{ type: string }>();
   const learnerLabel = (type && LEARNER_LABELS[type]) ?? 'learner';
   const [backFocused, setBackFocused] = useState(false);
-  const [homeFocused, setHomeFocused] = useState(false);
 
   function handleBack() {
     if (router.canGoBack()) {
@@ -35,60 +34,53 @@ export default function OnboardingPlaceholder() {
     <View style={styles.root}>
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.backButton,
-                backFocused && styles.backButtonFocused,
-                pressed && styles.backButtonPressed,
-              ]}
-              onPress={handleBack}
-              onFocus={() => setBackFocused(true)}
-              onBlur={() => setBackFocused(false)}
-              accessibilityRole="button"
-              accessibilityLabel="Back to welcome">
-              <Text style={styles.backArrow}>←</Text>
-              <Text style={styles.backLabel}>Back</Text>
-            </Pressable>
-          </View>
+          {/* Row wrapper centers content without relying on width: '100%' */}
+          <View style={styles.centerRow}>
+            <View style={styles.centerContent}>
+              {/* Header */}
+              <View style={styles.header}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.backButton,
+                    backFocused && styles.backButtonFocused,
+                    pressed && styles.backButtonPressed,
+                  ]}
+                  onPress={handleBack}
+                  onFocus={() => setBackFocused(true)}
+                  onBlur={() => setBackFocused(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Back to welcome">
+                  <Text style={styles.backArrow}>←</Text>
+                  <Text style={styles.backLabel}>Back</Text>
+                </Pressable>
+              </View>
 
-          {/* Content */}
-          <View style={styles.content}>
-            <View style={styles.badgeRow}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{learnerLabel}</Text>
+              {/* Content */}
+              <View style={styles.content}>
+                <View style={styles.badgeRow}>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{learnerLabel}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.heading}>Coming soon</Text>
+                <Text style={styles.subheading}>
+                  Your personalised{' '}
+                  <Text style={styles.pathwayHighlight}>{learnerLabel}</Text> onboarding is on its
+                  way.
+                </Text>
+
+                <View style={styles.previewCard}>
+                  <Text style={styles.previewIcon}>🗺️</Text>
+                  <Text style={styles.previewTitle}>What to expect</Text>
+                  <Text style={styles.previewBody}>
+                    This is a preview — full onboarding is coming soon. We&apos;ll help you
+                    discover learning resources and career options matched to your goals, with no
+                    account or personal data required.
+                  </Text>
+                </View>
               </View>
             </View>
-
-            <Text style={styles.heading}>Coming soon</Text>
-            <Text style={styles.subheading}>
-              Your personalised{' '}
-              <Text style={styles.pathwayHighlight}>{learnerLabel}</Text> onboarding is on its way.
-            </Text>
-
-            <View style={styles.previewCard}>
-              <Text style={styles.previewIcon}>🗺️</Text>
-              <Text style={styles.previewTitle}>What to expect</Text>
-              <Text style={styles.previewBody}>
-                We&apos;ll help you discover verified, affordable learning resources and career
-                opportunities matched to your goals — no account or personal data required.
-              </Text>
-            </View>
-
-            <Pressable
-              style={({ pressed }) => [
-                styles.backHome,
-                homeFocused && styles.backHomeFocused,
-                pressed && styles.backHomePressed,
-              ]}
-              onPress={handleBack}
-              onFocus={() => setHomeFocused(true)}
-              onBlur={() => setHomeFocused(false)}
-              accessibilityRole="button"
-              accessibilityLabel="Back to welcome screen">
-              <Text style={styles.backHomeText}>← Back to welcome</Text>
-            </Pressable>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -104,11 +96,20 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
   },
+  // Scroll content grows to fill; centering is handled by centerRow inside
   scroll: {
     flexGrow: 1,
+  },
+  // Row wrapper: centers centerContent without width: '100%'
+  centerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexGrow: 1,
+  },
+  // Bounded content column; flex: 1 fills row width up to maxWidth
+  centerContent: {
+    flex: 1,
     maxWidth: 720,
-    alignSelf: 'center',
-    width: '100%',
   },
   header: {
     paddingHorizontal: 20,
@@ -208,31 +209,5 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     color: BrandColors.textSecondary,
     fontWeight: '500',
-  },
-  backHome: {
-    alignSelf: 'flex-start',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    backgroundColor: BrandColors.heroBg,
-    minHeight: 44,
-    minWidth: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backHomeFocused: {
-    shadowColor: BrandColors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  backHomePressed: {
-    opacity: 0.8,
-  },
-  backHomeText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
   },
 });
