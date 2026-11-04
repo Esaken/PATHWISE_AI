@@ -64,6 +64,16 @@ function isValidWizardStep(v: unknown): v is WizardStep {
   return v === 1 || v === 2 || v === 3 || v === 'review' || v === 'complete';
 }
 
+// Call history.back() on web to keep the browser index in sync with wizard Back.
+// Falls back to dispatching BACK on native (no browser history API there).
+function webHistoryBack(fallback: () => void): void {
+  if (isWebHistoryAvailable()) {
+    window.history.back();
+  } else {
+    fallback();
+  }
+}
+
 // ─── Reducer ─────────────────────────────────────────────────────────────────
 
 type Action =
@@ -658,14 +668,23 @@ export default function OnboardingWizard() {
     window.history.replaceState({ ...(window.history.state ?? {}), pwStep: 1 }, '');
   }, []);
 
-  // Push a forward history entry when the wizard step advances. Skip when
-  // returning from edit-from-review (wasEditing) to avoid duplicate entries.
+  // True while processing a popstate event. Suppresses pushState in the
+  // step-change effect so browser-driven transitions never create extra entries.
+  const isFromPopStateRef = useRef(false);
+
+  // Push a forward history entry when the wizard step advances.
+  // Skip when returning from edit-from-review (wasEditing) to avoid duplicates.
+  // Skip entirely when the step change originated from a popstate event.
   const prevStateRef = useRef({ step: state.step as WizardStep, editingFromReview: false });
   useEffect(() => {
     if (!isWebHistoryAvailable()) return;
     const { step: prevStep, editingFromReview: wasEditing } = prevStateRef.current;
     prevStateRef.current = { step: state.step, editingFromReview: state.editingFromReview };
     if (prevStep === state.step) return;
+    if (isFromPopStateRef.current) {
+      isFromPopStateRef.current = false;
+      return;
+    }
     if (isForwardStep(prevStep, state.step) && !wasEditing) {
       window.history.pushState({ ...(window.history.state ?? {}), pwStep: state.step }, '');
     }
@@ -678,6 +697,7 @@ export default function OnboardingWizard() {
     function handlePopState(e: PopStateEvent) {
       const raw = (e.state as Record<string, unknown> | null)?.pwStep;
       if (isValidWizardStep(raw)) {
+        isFromPopStateRef.current = true;
         dispatch({ type: 'NAV_TO_STEP', step: raw });
       }
     }
@@ -697,6 +717,25 @@ export default function OnboardingWizard() {
     return () => sub.remove();
   }, [state.step, state.editingFromReview]);
 
+  // Unified in-app Back handler.
+  // - Step 1 (non-editing): exit onboarding via router.
+  // - Edit-cancel (editingFromReview): return to Review without touching browser history
+  //   (edit paths don't push history, so there's nothing to sync).
+  // - All other steps on web: call history.back() so the browser index moves in
+  //   lockstep with the wizard; the resulting popstate will dispatch NAV_TO_STEP.
+  // - All other steps on native: dispatch BACK directly (no browser history API).
+  const handleBack = useCallback(() => {
+    if (state.step === 1 && !state.editingFromReview) {
+      handleBackStep1();
+      return;
+    }
+    if (state.editingFromReview) {
+      dispatch({ type: 'BACK' });
+      return;
+    }
+    webHistoryBack(() => dispatch({ type: 'BACK' }));
+  }, [state.step, state.editingFromReview, handleBackStep1]);
+
   if (!learnerType) return <InvalidTypeFallback />;
 
   if (state.step === 'complete') {
@@ -708,7 +747,7 @@ export default function OnboardingWizard() {
       <ReviewScreen
         answers={state.answers}
         dispatch={dispatch}
-        onBack={() => dispatch({ type: 'BACK' })}
+        onBack={handleBack}
       />
     );
   }
@@ -718,10 +757,7 @@ export default function OnboardingWizard() {
     errors: state.errors,
     editingFromReview: state.editingFromReview,
     dispatch,
-    onBack:
-      state.step === 1 && !state.editingFromReview
-        ? handleBackStep1
-        : () => dispatch({ type: 'BACK' }),
+    onBack: handleBack,
   };
 
   if (state.step === 1) return <Step1 {...stepProps} />;

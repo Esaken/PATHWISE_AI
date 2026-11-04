@@ -580,6 +580,7 @@ describe('ChoiceGroup roving tabIndex (T2-B1)', () => {
 describe('browser history synchronization (T2-B2)', () => {
   const mockPushState = jest.fn();
   const mockReplaceState = jest.fn();
+  const mockHistoryBack = jest.fn();
   const mockRemoveEventListener = jest.fn();
   let capturedPopstateHandler: ((e: { state: unknown }) => void) | null = null;
   const g = globalThis as unknown as Record<string, unknown>;
@@ -589,11 +590,13 @@ describe('browser history synchronization (T2-B2)', () => {
     capturedPopstateHandler = null;
     mockPushState.mockClear();
     mockReplaceState.mockClear();
+    mockHistoryBack.mockClear();
 
     g.history = {
       state: null as unknown,
       pushState: mockPushState,
       replaceState: mockReplaceState,
+      back: mockHistoryBack,
     };
     g.addEventListener = jest.fn().mockImplementation(
       (event: string, handler: (e: { state: unknown }) => void) => {
@@ -641,13 +644,85 @@ describe('browser history synchronization (T2-B2)', () => {
     expect(mockPushState).not.toHaveBeenCalled();
   });
 
-  it('does not push history when using in-app Back', async () => {
+  it('in-app Back calls history.back() on web instead of pushing a new entry', async () => {
     const user = setupUser();
     const api = await renderWizard();
     await user.press(api.getByText('10th grade'));
     await user.press(api.getByTestId('step-next-button')); // step 2
     mockPushState.mockClear();
-    await user.press(api.getByText('Back')); // in-app back → no push
+    await user.press(api.getByText('Back'));
+    expect(mockHistoryBack).toHaveBeenCalledTimes(1);
+    expect(mockPushState).not.toHaveBeenCalled();
+  });
+
+  it('popstate navigation does not trigger a new pushState', async () => {
+    // Browser Forward fires popstate; the step-change effect must not push again.
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2 — push recorded
+    mockPushState.mockClear();
+    // Simulate browser Back (popstate to step 1)
+    await act(async () => {
+      capturedPopstateHandler?.({ state: { pwStep: 1 } });
+    });
+    // Simulate browser Forward (popstate to step 2)
+    await act(async () => {
+      capturedPopstateHandler?.({ state: { pwStep: 2 } });
+    });
+    expect(mockPushState).not.toHaveBeenCalled();
+  });
+
+  it('browser Forward from step 3 restores Review', async () => {
+    // Simulate: 1→2→3→review via Next, then back→back→forward→forward.
+    const user = setupUser();
+    const api = await renderWizard();
+
+    // Complete happy path to Review
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2
+    await user.press(api.getByText('Prepare for college'));
+    await user.press(api.getByTestId('step-next-button')); // step 3
+    await user.press(api.getByText('Technology & Computing'));
+    await user.press(api.getByText('Free only'));
+    await user.press(api.getByTestId('step-next-button')); // review
+    expect(api.getByText(/review your answers/i)).toBeTruthy();
+
+    mockPushState.mockClear();
+
+    // Simulate browser Back: Review → step 3
+    await act(async () => { capturedPopstateHandler?.({ state: { pwStep: 3 } }); });
+    expect(api.getByText(/your preferences/i)).toBeTruthy();
+
+    // Simulate browser Forward: step 3 → Review
+    await act(async () => { capturedPopstateHandler?.({ state: { pwStep: 'review' } }); });
+    expect(api.getByText(/review your answers/i)).toBeTruthy();
+
+    // No extra pushState calls during the Back/Forward cycle
+    expect(mockPushState).not.toHaveBeenCalled();
+  });
+
+  it('in-app Back followed by browser Forward returns wizard to the correct step', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2
+    mockPushState.mockClear();
+
+    // In-app Back: should call history.back(), not change UI directly.
+    // The popstate (simulated here) is what actually moves the wizard.
+    await user.press(api.getByText('Back'));
+    expect(mockHistoryBack).toHaveBeenCalledTimes(1);
+
+    // Simulate the popstate that history.back() would fire
+    await act(async () => { capturedPopstateHandler?.({ state: { pwStep: 1 } }); });
+    expect(api.getByText(/tell us about yourself/i)).toBeTruthy();
+
+    // Simulate browser Forward
+    await act(async () => { capturedPopstateHandler?.({ state: { pwStep: 2 } }); });
+    expect(api.getByText(/what is your primary goal/i)).toBeTruthy();
+
     expect(mockPushState).not.toHaveBeenCalled();
   });
 
