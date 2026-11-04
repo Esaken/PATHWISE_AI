@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
+  BackHandler,
   Platform,
   Pressable,
   ScrollView,
@@ -47,6 +48,22 @@ const webFocusRing =
     ? ({ boxShadow: '0 0 0 3px #6C5CE7, 0 0 0 5px #fff' } as unknown as ViewStyle)
     : {};
 
+// ─── Browser history helpers (T2-B2) ─────────────────────────────────────────
+
+const STEP_ORDER: WizardStep[] = [1, 2, 3, 'review', 'complete'];
+
+function isForwardStep(from: WizardStep, to: WizardStep): boolean {
+  return STEP_ORDER.indexOf(to) > STEP_ORDER.indexOf(from);
+}
+
+function isWebHistoryAvailable(): boolean {
+  return typeof window !== 'undefined' && !!window.history?.pushState;
+}
+
+function isValidWizardStep(v: unknown): v is WizardStep {
+  return v === 1 || v === 2 || v === 3 || v === 'review' || v === 'complete';
+}
+
 // ─── Reducer ─────────────────────────────────────────────────────────────────
 
 type Action =
@@ -55,7 +72,8 @@ type Action =
   | { type: 'BACK' }
   | { type: 'EDIT_FROM_REVIEW'; step: 1 | 2 | 3 }
   | { type: 'SUBMIT' }
-  | { type: 'SET_ERRORS'; errors: StepErrors };
+  | { type: 'SET_ERRORS'; errors: StepErrors }
+  | { type: 'NAV_TO_STEP'; step: WizardStep };
 
 function makeInitialAnswers(learnerType: LearnerType): OnboardingAnswers {
   if (learnerType === 'high-school') {
@@ -130,6 +148,9 @@ function wizardReducer(state: WizardState, action: Action): WizardState {
 
     case 'SUBMIT':
       return { ...state, step: 'complete', errors: {} };
+
+    case 'NAV_TO_STEP':
+      return { ...state, step: action.step, editingFromReview: false, errors: {} };
 
     default:
       return state;
@@ -627,6 +648,54 @@ export default function OnboardingWizard() {
       router.replace('/');
     }
   }, []);
+
+  // ─── T2-B2: Browser history synchronization ───────────────────────────────
+
+  // Stamp the initial history entry with the wizard step so browser Back can
+  // return to previous steps without exposing answers in the URL.
+  useEffect(() => {
+    if (!isWebHistoryAvailable()) return;
+    window.history.replaceState({ ...(window.history.state ?? {}), pwStep: 1 }, '');
+  }, []);
+
+  // Push a forward history entry when the wizard step advances. Skip when
+  // returning from edit-from-review (wasEditing) to avoid duplicate entries.
+  const prevStateRef = useRef({ step: state.step as WizardStep, editingFromReview: false });
+  useEffect(() => {
+    if (!isWebHistoryAvailable()) return;
+    const { step: prevStep, editingFromReview: wasEditing } = prevStateRef.current;
+    prevStateRef.current = { step: state.step, editingFromReview: state.editingFromReview };
+    if (prevStep === state.step) return;
+    if (isForwardStep(prevStep, state.step) && !wasEditing) {
+      window.history.pushState({ ...(window.history.state ?? {}), pwStep: state.step }, '');
+    }
+  }, [state.step, state.editingFromReview]);
+
+  // Intercept browser Back/Forward: if the target history entry has a pwStep
+  // marker we placed, navigate the wizard to that step instead of leaving.
+  useEffect(() => {
+    if (!isWebHistoryAvailable()) return;
+    function handlePopState(e: PopStateEvent) {
+      const raw = (e.state as Record<string, unknown> | null)?.pwStep;
+      if (isValidWizardStep(raw)) {
+        dispatch({ type: 'NAV_TO_STEP', step: raw });
+      }
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Android hardware Back: dispatch BACK within the wizard; only let it
+  // propagate on step 1 (exits onboarding to the welcome screen).
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (state.step === 1 && !state.editingFromReview) return false;
+      dispatch({ type: 'BACK' });
+      return true;
+    });
+    return () => sub.remove();
+  }, [state.step, state.editingFromReview]);
 
   if (!learnerType) return <InvalidTypeFallback />;
 

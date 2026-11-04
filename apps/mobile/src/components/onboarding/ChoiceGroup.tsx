@@ -24,6 +24,7 @@ type ChoiceGroupProps = {
   onSelect: (value: string) => void;
   label: string;
   error?: string;
+  required?: boolean;
   testID?: string;
 };
 
@@ -36,12 +37,13 @@ const webFocusRing =
 type OptionCardProps = {
   option: ChoiceOption;
   selected: boolean;
+  tabbable: boolean;
   onSelect: () => void;
   onNavigate: (dir: 'prev' | 'next') => void;
   ref?: React.Ref<PressableInstance>;
 };
 
-function OptionCard({ option, selected, onSelect, onNavigate, ref }: OptionCardProps) {
+function OptionCard({ option, selected, tabbable, onSelect, onNavigate, ref }: OptionCardProps) {
   const [focused, setFocused] = useState(false);
 
   function handleKeyDown(e: KeyDownEvent) {
@@ -68,7 +70,7 @@ function OptionCard({ option, selected, onSelect, onNavigate, ref }: OptionCardP
       ref={ref}
       role="radio"
       aria-checked={selected}
-      tabIndex={selected ? 0 : -1}
+      tabIndex={tabbable ? 0 : -1}
       accessibilityLabel={option.label}
       accessibilityHint={option.qualifier}
       onPress={onSelect}
@@ -108,6 +110,7 @@ export function ChoiceGroup({
   onSelect,
   label,
   error,
+  required = true,
   testID,
 }: ChoiceGroupProps) {
   const refs = useRef<(PressableInstance | null)[]>(options.map(() => null));
@@ -121,13 +124,17 @@ export function ChoiceGroup({
   }
 
   const errorId = testID ? `${testID}-error` : undefined;
+  const hasError = error != null && error !== '';
 
   return (
     <View testID={testID}>
       <View
         role="radiogroup"
         accessibilityLabel={label}
-        aria-describedby={error ? errorId : undefined}
+        aria-required={required}
+        aria-invalid={hasError ? true : undefined}
+        aria-describedby={hasError ? errorId : undefined}
+        testID={testID ? `${testID}-group` : undefined}
         style={styles.group}>
         {options.map((option, idx) => (
           <OptionCard
@@ -137,6 +144,7 @@ export function ChoiceGroup({
             }}
             option={option}
             selected={selected === option.value}
+            tabbable={selected === option.value || (selected == null && idx === 0)}
             onSelect={() => {
               onSelect(option.value);
               refs.current[idx]?.focus();
@@ -145,7 +153,7 @@ export function ChoiceGroup({
           />
         ))}
       </View>
-      {error != null && error !== '' && (
+      {hasError && (
         <Text
           nativeID={errorId}
           role="alert"

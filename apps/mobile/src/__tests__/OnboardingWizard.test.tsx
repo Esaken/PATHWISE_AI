@@ -9,7 +9,7 @@
  * - userEvent is used instead of fireEvent for reliable act() flushing with React 19
  */
 import React from 'react';
-import { render, userEvent } from '@testing-library/react-native';
+import { act, render, userEvent } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 import OnboardingWizard from '@/app/onboarding/[type]';
 
@@ -526,5 +526,233 @@ describe('privacy', () => {
     setLearnerType('adult');
     const api = await renderWizard();
     expect(api.queryByText(/email/i)).toBeNull();
+  });
+});
+
+// ─── T2-B1: ChoiceGroup roving tabIndex ──────────────────────────────────────
+// RNTL notes:
+//  - tabIndex appears in r.props.tabIndex (passed through, no native mapping)
+//  - aria-checked is mapped to accessibilityState.checked by React Native
+
+describe('ChoiceGroup roving tabIndex (T2-B1)', () => {
+  beforeEach(() => setLearnerType('high-school'));
+
+  it('first radio has tabIndex=0 when no option is selected', async () => {
+    const api = await renderWizard();
+    const radios = api.getAllByRole('radio');
+    expect(radios[0].props.tabIndex).toBe(0);
+  });
+
+  it('non-first radios have tabIndex=-1 when no option is selected', async () => {
+    const api = await renderWizard();
+    const radios = api.getAllByRole('radio');
+    expect(radios.slice(1).every((r) => r.props.tabIndex === -1)).toBe(true);
+  });
+
+  it('selected radio gets tabIndex=0', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    const radios = api.getAllByRole('radio');
+    // aria-checked is mapped to accessibilityState.checked in RNTL
+    const selectedIdx = radios.findIndex((r) => r.props.accessibilityState?.checked === true);
+    expect(selectedIdx).toBeGreaterThanOrEqual(0);
+    expect(radios[selectedIdx].props.tabIndex).toBe(0);
+  });
+
+  it('unselected radios have tabIndex=-1 after a selection is made', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    const radios = api.getAllByRole('radio');
+    const unselected = radios.filter((r) => r.props.accessibilityState?.checked !== true);
+    expect(unselected.every((r) => r.props.tabIndex === -1)).toBe(true);
+  });
+});
+
+// ─── T2-B2: Browser history synchronization ──────────────────────────────────
+// The React Native test environment has no window.history or PopStateEvent, so
+// we install minimal mocks. The component's history effects gate on
+// isWebHistoryAvailable() — once window.history.pushState is defined, the
+// effects run and we can verify they call the mocks, and trigger popstate by
+// calling the captured listener directly.
+
+describe('browser history synchronization (T2-B2)', () => {
+  const mockPushState = jest.fn();
+  const mockReplaceState = jest.fn();
+  const mockRemoveEventListener = jest.fn();
+  let capturedPopstateHandler: ((e: { state: unknown }) => void) | null = null;
+  const g = globalThis as unknown as Record<string, unknown>;
+
+  beforeEach(() => {
+    setLearnerType('high-school');
+    capturedPopstateHandler = null;
+    mockPushState.mockClear();
+    mockReplaceState.mockClear();
+
+    g.history = {
+      state: null as unknown,
+      pushState: mockPushState,
+      replaceState: mockReplaceState,
+    };
+    g.addEventListener = jest.fn().mockImplementation(
+      (event: string, handler: (e: { state: unknown }) => void) => {
+        if (event === 'popstate') capturedPopstateHandler = handler;
+      }
+    );
+    g.removeEventListener = mockRemoveEventListener;
+  });
+
+  afterEach(() => {
+    delete g.history;
+    delete g.addEventListener;
+    // Keep removeEventListener alive until afterAll — RNTL's cleanup (afterEach)
+    // runs after ours and still needs it to unmount the component cleanly.
+    mockRemoveEventListener.mockClear();
+  });
+
+  afterAll(() => {
+    delete g.removeEventListener;
+  });
+
+  it('stamps initial history entry with pwStep: 1 on mount', async () => {
+    await renderWizard();
+    expect(mockReplaceState).toHaveBeenCalledWith(
+      expect.objectContaining({ pwStep: 1 }),
+      ''
+    );
+  });
+
+  it('pushes history entry with pwStep: 2 when advancing to step 2', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button'));
+    expect(mockPushState).toHaveBeenCalledWith(
+      expect.objectContaining({ pwStep: 2 }),
+      ''
+    );
+  });
+
+  it('does not push history when Next is blocked by validation', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByTestId('step-next-button')); // no selection → fails
+    expect(mockPushState).not.toHaveBeenCalled();
+  });
+
+  it('does not push history when using in-app Back', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2
+    mockPushState.mockClear();
+    await user.press(api.getByText('Back')); // in-app back → no push
+    expect(mockPushState).not.toHaveBeenCalled();
+  });
+
+  it('popstate with pwStep: 1 returns wizard to step 1 from step 2', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // reach step 2
+    await act(async () => {
+      capturedPopstateHandler?.({ state: { pwStep: 1 } });
+    });
+    expect(api.getByText(/tell us about yourself/i)).toBeTruthy();
+  });
+
+  it('grade selection is preserved after popstate back to step 1', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button'));
+    await act(async () => {
+      capturedPopstateHandler?.({ state: { pwStep: 1 } });
+    });
+    const radios = api.getAllByRole('radio');
+    const checked = radios.find((r) => r.props.accessibilityState?.checked === true);
+    expect(checked).toBeTruthy();
+  });
+
+  it('popstate without pwStep does not change wizard state', async () => {
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('10th grade'));
+    await user.press(api.getByTestId('step-next-button')); // step 2
+    await act(async () => {
+      capturedPopstateHandler?.({ state: { someOtherKey: true } });
+    });
+    expect(api.getByText(/what is your primary goal/i)).toBeTruthy();
+  });
+});
+
+// ─── T2-B3: Accessibility semantics ──────────────────────────────────────────
+// getByRole('radiogroup') is not supported in RNTL (no native mapping for
+// radiogroup); use getByTestId('*-group') added to the radiogroup View.
+
+describe('accessibility semantics (T2-B3)', () => {
+  it('choice group radiogroup has aria-required', async () => {
+    setLearnerType('high-school');
+    const api = await renderWizard();
+    const group = api.getByTestId('grade-choice-group');
+    expect(group.props['aria-required']).toBe(true);
+  });
+
+  it('choice group has no aria-invalid before any interaction', async () => {
+    setLearnerType('high-school');
+    const api = await renderWizard();
+    const group = api.getByTestId('grade-choice-group');
+    expect(group.props['aria-invalid']).toBeFalsy();
+  });
+
+  it('choice group has aria-invalid=true after attempted Next with no selection', async () => {
+    setLearnerType('high-school');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByTestId('step-next-button'));
+    const group = api.getByTestId('grade-choice-group');
+    expect(group.props['aria-invalid']).toBe(true);
+  });
+
+  it('aria-invalid clears once a valid selection is made', async () => {
+    setLearnerType('high-school');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByTestId('step-next-button')); // trigger error
+    await user.press(api.getByText('10th grade'));          // clear by selecting
+    const group = api.getByTestId('grade-choice-group');
+    expect(group.props['aria-invalid']).toBeFalsy();
+  });
+
+  it('error text nativeID matches radiogroup aria-describedby', async () => {
+    setLearnerType('high-school');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByTestId('step-next-button'));
+    const group = api.getByTestId('grade-choice-group');
+    const describedById = group.props['aria-describedby'] as string | undefined;
+    expect(describedById).toBeTruthy();
+    const errorText = api.getByTestId('grade-choice-error-text');
+    expect(errorText.props.nativeID).toBe(describedById);
+  });
+
+  it('something-else textfield has aria-required', async () => {
+    setLearnerType('adult');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('Something else'));
+    const input = api.getByTestId('career-goal-other-input');
+    expect(input.props['aria-required']).toBe(true);
+  });
+
+  it('something-else textfield has aria-invalid after failed validation', async () => {
+    setLearnerType('adult');
+    const user = setupUser();
+    const api = await renderWizard();
+    await user.press(api.getByText('Something else'));
+    await user.press(api.getByTestId('step-next-button'));
+    const input = api.getByTestId('career-goal-other-input');
+    expect(input.props['aria-invalid']).toBe(true);
   });
 });

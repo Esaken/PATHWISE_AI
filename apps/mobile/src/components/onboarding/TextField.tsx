@@ -59,7 +59,9 @@ export function TextField({
         onBlur={() => setFocused(false)}
         accessibilityLabel={label}
         accessibilityHint={hint}
-        aria-describedby={error ? errorId : hintId}
+        aria-required={!optional}
+        aria-invalid={error != null && error !== '' ? true : undefined}
+        aria-describedby={error != null && error !== '' ? errorId : hintId}
         testID={testID ? `${testID}-input` : undefined}
       />
       <View style={styles.footer}>
