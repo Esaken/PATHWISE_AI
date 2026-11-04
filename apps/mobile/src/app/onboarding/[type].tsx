@@ -1,5 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+
+import { useSession } from '@/context/SessionContext';
 import {
   BackHandler,
   Platform,
@@ -670,6 +672,8 @@ export default function OnboardingWizard() {
     answerSnapshot: null,
   });
 
+  const { setAnswers } = useSession();
+
   const handleBackStep1 = useCallback(() => {
     if (router.canGoBack()) {
       router.back();
@@ -735,6 +739,15 @@ export default function OnboardingWizard() {
     });
     return () => sub.remove();
   }, [state.step, state.editingFromReview]);
+
+  // On completion, store answers in session and open catalog results.
+  useEffect(() => {
+    if (state.step === 'complete') {
+      setAnswers(state.answers);
+      router.replace('/opportunities' as any);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.step]);
 
   // Unified in-app Back handler.
   // - Step 1 (non-editing): exit onboarding via router.

@@ -12,6 +12,7 @@ import React from 'react';
 import { act, render, userEvent } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 import OnboardingWizard from '@/app/onboarding/[type]';
+import { SessionProvider } from '@/context/SessionContext';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,11 @@ function setLearnerType(type: string) {
 }
 
 async function renderWizard(): Promise<Api> {
-  return render(<OnboardingWizard />);
+  return render(
+    <SessionProvider>
+      <OnboardingWizard />
+    </SessionProvider>
+  );
 }
 
 function setupUser() {
