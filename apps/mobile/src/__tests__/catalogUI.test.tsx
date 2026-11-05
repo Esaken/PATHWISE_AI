@@ -1,13 +1,12 @@
 /**
- * Regression tests for catalog UI interactive target sizes (T3-B4).
- * Verifies that filter chips and header action buttons meet the 44×44 CSS-pixel
- * minimum required by TASK-003. Browser-level DOM measurements are needed for
- * production verification; these tests guard against StyleSheet regressions.
+ * Regression tests for catalog UI interactive target sizes (T3-B4) and
+ * keyboard activation (T3-B5). Browser-level DOM measurements are needed for
+ * production verification; these tests guard against StyleSheet and event regressions.
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { FilterBar } from '@/components/catalog/FilterBar';
-import { EMPTY_FILTERS } from '@/catalog/types';
+import { EMPTY_FILTERS, type CatalogFilters } from '@/catalog/types';
 
 jest.mock('react-native-safe-area-context', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -43,5 +42,64 @@ describe('FilterBar interactive target sizes', () => {
     );
     const chip = api.getByTestId('filter-cybersecurity');
     expect(chip).toHaveStyle({ minWidth: 44 });
+  });
+});
+
+describe('FilterBar keyboard activation (T3-B5)', () => {
+  it('Space key toggles a filter chip on', async () => {
+    let captured: CatalogFilters = EMPTY_FILTERS;
+    const api = await render(
+      <FilterBar
+        filters={EMPTY_FILTERS}
+        onFiltersChange={(f) => { captured = f; }}
+      />,
+    );
+    const chip = api.getByTestId('filter-high-school');
+    fireEvent(chip, 'keyDown', { key: ' ' });
+    expect(captured.learnerCategories).toContain('high-school');
+  });
+
+  it('Enter key toggles a filter chip on', async () => {
+    let captured: CatalogFilters = EMPTY_FILTERS;
+    const api = await render(
+      <FilterBar
+        filters={EMPTY_FILTERS}
+        onFiltersChange={(f) => { captured = f; }}
+      />,
+    );
+    const chip = api.getByTestId('filter-high-school');
+    fireEvent(chip, 'keyDown', { key: 'Enter' });
+    expect(captured.learnerCategories).toContain('high-school');
+  });
+
+  it('Space key toggles an active chip off', async () => {
+    const activeFilters: CatalogFilters = {
+      ...EMPTY_FILTERS,
+      learnerCategories: ['high-school'],
+    };
+    let captured: CatalogFilters = activeFilters;
+    const api = await render(
+      <FilterBar
+        filters={activeFilters}
+        onFiltersChange={(f) => { captured = f; }}
+      />,
+    );
+    const chip = api.getByTestId('filter-high-school');
+    fireEvent(chip, 'keyDown', { key: ' ' });
+    expect(captured.learnerCategories).not.toContain('high-school');
+  });
+
+  it('unrelated keys do not trigger a toggle', async () => {
+    let callCount = 0;
+    const api = await render(
+      <FilterBar
+        filters={EMPTY_FILTERS}
+        onFiltersChange={() => { callCount++; }}
+      />,
+    );
+    const chip = api.getByTestId('filter-high-school');
+    fireEvent(chip, 'keyDown', { key: 'Tab' });
+    fireEvent(chip, 'keyDown', { key: 'Escape' });
+    expect(callCount).toBe(0);
   });
 });

@@ -27,6 +27,12 @@ function Chip({
   accessibilityLabel: string;
 }) {
   const [focused, setFocused] = useState(false);
+  const keyHandler = ({ key, preventDefault }: { key: string; preventDefault?: () => void }) => {
+    if (key === ' ' || key === 'Enter') {
+      preventDefault?.();
+      onToggle();
+    }
+  };
   return (
     <Pressable
       onPress={onToggle}
@@ -36,7 +42,8 @@ function Chip({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: active }}
       style={[styles.chip, active && styles.chipActive, focused && styles.chipFocused, focused && webFocusRing]}
-      testID={testID}>
+      testID={testID}
+      {...({ onKeyDown: keyHandler } as unknown as object)}>
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     </Pressable>
   );

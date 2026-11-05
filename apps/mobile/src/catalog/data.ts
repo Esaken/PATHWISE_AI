@@ -96,10 +96,10 @@ export const CATALOG: readonly Opportunity[] = [
     title: 'Modern States — Free CLEP Exam Preparation',
     provider: 'Modern States Education Alliance',
     description:
-      'Modern States offers free online college courses taught by professors from leading universities, designed to prepare learners for College Board CLEP exams. The organization also provides a program to help cover CLEP exam registration fees for eligible participants. Potential academic credit depends entirely on each institution\'s current CLEP acceptance policy, which must be confirmed directly with the institution.',
+      'Modern States offers free online college courses taught by professors from leading universities, designed to prepare learners for College Board CLEP exams. After completing a course and its practice questions, qualified participants may receive a voucher code that covers the CLEP exam registration fee when entered at College Board registration. Potential academic credit depends entirely on each institution\'s current CLEP acceptance policy, which must be confirmed directly with the institution before scheduling an exam.',
     learnerEligibility: {
       categories: ['university', 'high-school'],
-      summary: 'Open to learners preparing for CLEP exams. Eligibility for the exam-voucher program may have additional criteria — check the Modern States website for current requirements.',
+      summary: 'Open to learners preparing for CLEP exams. Voucher eligibility requires course and practice-question completion; check the Modern States website for current qualification criteria.',
       minimumAge: null,
       prerequisites: [],
     },
@@ -124,9 +124,12 @@ export const CATALOG: readonly Opportunity[] = [
     verification: {
       status: 'verified-official-source',
       checkedOn: '2026-11-04',
-      sourceUrls: ['https://modernstates.org'],
+      sourceUrls: [
+        'https://modernstates.org',
+        'https://helpdesk.modernstates.org/support/solutions/articles/151000233533-can-i-start-earning-college-credit-with-clep-',
+      ],
       evidenceNotes:
-        'Modern States homepage confirms free, self-paced course offering and CLEP exam voucher program. Disclaimer text sourced from site: "CLEP credit policies vary by institution. Before scheduling an exam, confirm with your college or university which CLEP exams they accept, the scores required, and how the credit applies to your degree." Reviewed 2026-11-04.',
+        'Modern States homepage confirms free, self-paced course offering. Official Modern States helpdesk article "Can I start earning college credit with CLEP?" confirms: (1) qualified students receive "a code to enter when you register for your exam with the College Board, and it covers the full cost" after completing a course and practice questions; (2) institutional-policy disclaimer: "CLEP credit policies vary by institution. Before scheduling an exam, confirm with your college or university which CLEP exams they accept, the scores required, and how the credit applies to your degree." Both sources reviewed 2026-11-04.',
     },
     creditRecognition: {
       kind: 'possible-institution-approval',
@@ -176,9 +179,11 @@ export const CATALOG: readonly Opportunity[] = [
         'https://clep.collegeboard.org',
         'https://clep.collegeboard.org/clep-exams',
         'https://clep.collegeboard.org/about-remote-proctoring/take-clep-exam-remote-proctoring',
+        'https://clep.collegeboard.org/clep-exams/college-composition',
+        'https://clep.collegeboard.org/prepare-for-an-exam/study-resources-by-exam/spanish-with-writing',
       ],
       evidenceNotes:
-        'College Board CLEP homepage and exam listing page confirm 34 available exams and $97 registration fee (additional test center fees may apply). Exam durations are exam-specific, not universal; College Composition is 125 minutes and Spanish with Writing is 110 minutes per official exam pages. Remote proctoring page confirms all 34 exams are available through remote proctoring for eligible test takers. Credit policies confirmed to vary by institution. Reviewed 2026-11-04.',
+        'College Board CLEP homepage and exam listing page confirm 34 available exams and $97 registration fee (additional test center fees may apply). Exam durations are exam-specific: official College Composition page states 125 minutes; official Spanish with Writing page states 110 minutes — confirming no universal duration applies. Remote proctoring page confirms all 34 exams available through remote proctoring for eligible test takers. Credit policies confirmed to vary by institution via College Board guidance. All sources reviewed 2026-11-04.',
     },
     creditRecognition: {
       kind: 'possible-institution-approval',
@@ -194,11 +199,11 @@ export const CATALOG: readonly Opportunity[] = [
     title: 'Louisiana Responsible Vendor Training',
     provider: 'ATC-Approved Responsible Vendor Training Providers',
     description:
-      'Louisiana law requires alcohol beverage servers and sellers to complete a Responsible Vendor (RV) training course delivered by a provider currently approved by the Louisiana Office of Alcohol and Tobacco Control (ATC). The ATC administers and regulates the program; actual training is delivered by independent ATC-approved providers. After completing an approved training course, participants must also pass a separate exam to obtain a Responsible Vendor server permit card. The training course, the exam, the server permit card, vendor certification, and any employer requirements are separate steps — completing one does not automatically fulfill the others. Provider-specific details including course availability, delivery method, price, and schedule are managed by each individual provider and must be confirmed directly. The official ATC-approved provider list must be consulted to identify currently approved providers.',
+      'The Louisiana Office of Alcohol and Tobacco Control (ATC) administers the Responsible Vendor (RV) program. Training is delivered by independent providers who have been approved by the ATC; only currently approved providers may offer this training. The ATC maintains an official list of currently approved providers. Provider-specific details — including course availability, delivery method (online, in-person, or both), price, and schedule — are managed by each individual provider and must be confirmed directly with that provider. Requirements associated with the RV bar card and permit system must be confirmed with the Louisiana ATC and your employer.',
     learnerEligibility: {
       categories: ['adult'],
       summary:
-        'Required for alcohol beverage servers and sellers in Louisiana under Louisiana law. Age and other requirements are set by Louisiana law and individual employers; confirm current requirements with your employer and the Louisiana ATC.',
+        'Required for alcohol beverage servers and sellers in Louisiana. Confirm current requirements — including age, employer conditions, and applicable law — directly with the Louisiana ATC and your employer.',
       minimumAge: null,
       prerequisites: [],
     },
@@ -221,23 +226,23 @@ export const CATALOG: readonly Opportunity[] = [
       mode: 'hybrid',
       jurisdictions: ['Louisiana'],
       locationSummary:
-        'Delivery method varies by provider — some ATC-approved providers offer online-only training; others offer in-person classroom sessions or both. Consult the current ATC-approved provider list for each provider\'s delivery options, locations, and schedules.',
+        'Delivery method varies by provider — the ATC-approved provider list includes online-only providers and in-person classroom providers. Consult the current list for each provider\'s delivery options, locations, and schedules.',
     },
     verification: {
       status: 'verified-official-source',
       checkedOn: '2026-11-04',
       sourceUrls: [
         'https://atc.louisiana.gov/responsible-vendors/responsible-vendor-information/',
-        'https://atc.louisiana.gov/media/5e4bsyim/responsible-vendor-provider-list-updated-11-7-25.pdf',
+        'https://atc.louisiana.gov/media/5e4bsyim/rv-list_9-23-26.pdf',
       ],
       evidenceNotes:
-        'Louisiana ATC Responsible Vendor information page confirms the program\'s legal basis, that training must be completed through an ATC-approved provider, and that a separate exam and server permit card are part of the process. The ATC maintains an approved provider list (last updated 2025-11-07 per filename) which lists providers offering online-only, classroom, or both delivery modes — confirming delivery is provider-dependent, not exclusively in-person. Provider-specific price, duration, and schedule details are not stated on the ATC program page. Reviewed 2026-11-04.',
+        'Louisiana ATC Responsible Vendor information page confirms: ATC administers the program; training must be completed through an ATC-approved provider; the program is associated with the RV bar card and permit system. The official ATC-approved provider list (rv-list_9-23-26.pdf, linked from the ATC RV page, updated 2026-09-23) lists providers offering online-only, in-person, or both delivery modes — confirming delivery is provider-dependent, not exclusively in-person. Provider-specific price, duration, and schedule details are not published on the ATC program page. Reviewed 2026-11-04.',
     },
     creditRecognition: {
       kind: 'certification-or-required-training',
       disclaimer:
-        'Completing an ATC-approved Responsible Vendor training course does not by itself fulfill all requirements. A separate exam, a Responsible Vendor server permit card, and employer requirements are distinct steps. Requirements are set by Louisiana law. Confirm all current requirements with the Louisiana ATC and your employer.',
-      outcome: 'Completion certificate from an ATC-approved Responsible Vendor training course. A separate exam and server permit card are required by Louisiana law; confirm all steps with the Louisiana ATC.',
+        'Completing an ATC-approved Responsible Vendor training course does not by itself fulfill all requirements associated with the Louisiana RV bar card and permit system. Confirm all current requirements — including applicable law, employer conditions, and RV program steps — directly with the Louisiana ATC and your employer.',
+      outcome: null,
     },
     searchTags: ['Louisiana', 'responsible vendor', 'ATC', 'alcohol', 'server training', 'required', 'hybrid'],
   },
