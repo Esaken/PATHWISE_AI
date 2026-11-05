@@ -199,11 +199,11 @@ export const CATALOG: readonly Opportunity[] = [
     title: 'Louisiana Responsible Vendor Training',
     provider: 'ATC-Approved Responsible Vendor Training Providers',
     description:
-      'The Louisiana Office of Alcohol and Tobacco Control (ATC) administers the Responsible Vendor (RV) program. Training is delivered by independent providers who have been approved by the ATC; only currently approved providers may offer this training. The ATC maintains an official list of currently approved providers. Provider-specific details — including course availability, delivery method (online, in-person, or both), price, and schedule — are managed by each individual provider and must be confirmed directly with that provider. Requirements associated with the RV bar card and permit system must be confirmed with the Louisiana ATC and your employer.',
+      'Louisiana R.S. 26:933 establishes the Louisiana Responsible Vendor Program to educate vendors and their employees on the responsible sale and service of alcoholic beverages and tobacco products. Required training must be completed through providers approved by the program administrator (R.S. 26:932) within 45 days of employment commencement (R.S. 26:934). Training covers alcohol classification, drug interactions, absorption rates, recognizing intoxicated or underage customers, applicable state and local alcohol laws, and tobacco regulations. Upon successful completion, servers receive a server permit valid for four years, which remains the property of the server and is valid statewide (R.S. 26:934). The Louisiana Office of Alcohol and Tobacco Control (ATC) administers the program and maintains the official list of currently approved providers. Provider-specific details — including availability, delivery method (online, in-person, or both), price, and schedule — are set by each individual provider and must be confirmed directly with that provider.',
     learnerEligibility: {
       categories: ['adult'],
       summary:
-        'Required for alcohol beverage servers and sellers in Louisiana. Confirm current requirements — including age, employer conditions, and applicable law — directly with the Louisiana ATC and your employer.',
+        'Required for servers (employees authorized to sell or serve alcoholic beverages, tobacco products, alternative nicotine products, or vapor products) and security personnel employed by eligible Louisiana vendors (Class A General, Class A Restaurant, Class B retail, or Retail Dealer permit holders), per R.S. 26:932 and R.S. 26:934. Training must be completed within 45 days of employment commencement through an ATC-approved provider. Confirm current requirements with the Louisiana ATC and your employer.',
       minimumAge: null,
       prerequisites: [],
     },
@@ -230,20 +230,21 @@ export const CATALOG: readonly Opportunity[] = [
     },
     verification: {
       status: 'verified-official-source',
-      checkedOn: '2026-11-04',
+      checkedOn: '2026-11-05',
       sourceUrls: [
         'https://atc.louisiana.gov/responsible-vendors/responsible-vendor-information/',
         'https://atc.louisiana.gov/media/5e4bsyim/rv-list_9-23-26.pdf',
+        'https://atc.louisiana.gov/media/dx4bcx25/2026-atc-lawbook.pdf',
       ],
       evidenceNotes:
-        'Louisiana ATC Responsible Vendor information page confirms: ATC administers the program; training must be completed through an ATC-approved provider; the program is associated with the RV bar card and permit system. The official ATC-approved provider list (rv-list_9-23-26.pdf, linked from the ATC RV page, updated 2026-09-23) lists providers offering online-only, in-person, or both delivery modes — confirming delivery is provider-dependent, not exclusively in-person. Provider-specific price, duration, and schedule details are not published on the ATC program page. Reviewed 2026-11-04.',
+        '2026 ATC lawbook (atc.louisiana.gov/media/dx4bcx25/2026-atc-lawbook.pdf), Chapter 8 — Responsible Vendor Program: R.S. 26:932 (lawbook p. 188) defines "server" as an employee authorized to sell or serve alcoholic beverages, tobacco products, alternative nicotine products, or vapor products (excluding temporary hotel/motel banquet staff), and "approved provider" as an individual, association, partnership, or corporation authorized by the program administrator to deliver training courses. R.S. 26:933 establishes the Louisiana Responsible Vendor Program and specifies server training course content: alcohol classification, drug interactions, absorption rates, identifying intoxicated or underage persons, state/local alcohol laws, and tobacco regulations. R.S. 26:934 (lawbook p. 191) requires training completion within 45 days of employment commencement through an approved provider; the resulting server permit is valid for four years, is the property of the server, and is valid statewide. ATC Responsible Vendor information page (atc.louisiana.gov) confirms ATC administers the program and maintains the approved provider list; page does not state the statutory requirements cited above. Official ATC-approved provider list (rv-list_9-23-26.pdf, updated 2026-09-23) confirms hybrid delivery: online-only, in-person, and combined-mode providers are listed — delivery is provider-dependent. Provider-specific price, duration, and schedule are not published by ATC. Reviewed 2026-11-05.',
     },
     creditRecognition: {
       kind: 'certification-or-required-training',
       disclaimer:
-        'Completing an ATC-approved Responsible Vendor training course does not by itself fulfill all requirements associated with the Louisiana RV bar card and permit system. Confirm all current requirements — including applicable law, employer conditions, and RV program steps — directly with the Louisiana ATC and your employer.',
-      outcome: null,
+        'Completion of required training courses through an ATC-approved provider results in a server permit valid for four years, statewide (R.S. 26:934). Server permit issuance is one component of responsible vendor certification; additional requirements under R.S. 26:934 (including vendor handbook acknowledgment and training record maintenance) also apply to vendor certification. Confirm all current requirements — including employer conditions and applicable law — with the Louisiana ATC and your employer.',
+      outcome: 'Server permit (four years, statewide; R.S. 26:934)',
     },
-    searchTags: ['Louisiana', 'responsible vendor', 'ATC', 'alcohol', 'server training', 'required', 'hybrid'],
+    searchTags: ['Louisiana', 'responsible vendor', 'ATC', 'alcohol', 'server training', 'required', 'hybrid', 'R.S. 26:933', 'R.S. 26:934'],
   },
 ] satisfies readonly Opportunity[];

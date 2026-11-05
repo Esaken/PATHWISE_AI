@@ -1,7 +1,9 @@
 /**
  * Regression tests for catalog UI interactive target sizes (T3-B4) and
- * keyboard activation (T3-B5). Browser-level DOM measurements are needed for
- * production verification; these tests guard against StyleSheet and event regressions.
+ * keyboard activation (T3-B5). Browser-level DOM measurements and Chromium AX
+ * verification are required for full acceptance; these tests guard against
+ * StyleSheet and event-handler regressions using the React Native KeyDownEvent
+ * shape (nativeEvent.key, e.preventDefault()).
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
@@ -19,12 +21,17 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+// Minimal KeyDownEvent-compatible event object matching React Native Web's
+// nativeEvent shape used by KeyDownEvent handlers (e.nativeEvent.key, e.preventDefault()).
+function keyEvent(key: string): { nativeEvent: { key: string }; preventDefault: jest.Mock } {
+  return { nativeEvent: { key }, preventDefault: jest.fn() };
+}
+
 describe('FilterBar interactive target sizes', () => {
   it('filter chips have minHeight >= 44', async () => {
     const api = await render(
       <FilterBar filters={EMPTY_FILTERS} onFiltersChange={() => {}} />,
     );
-    // Check a representative chip from each group
     const cybersecurityChip = api.getByTestId('filter-cybersecurity');
     const learnerChip = api.getByTestId('filter-high-school');
     const budgetChip = api.getByTestId('filter-budget-free');
@@ -45,8 +52,8 @@ describe('FilterBar interactive target sizes', () => {
   });
 });
 
-describe('FilterBar keyboard activation (T3-B5)', () => {
-  it('Space key toggles a filter chip on', async () => {
+describe('FilterBar keyboard activation — Space (T3-B5)', () => {
+  it('Space toggles an inactive chip on and calls preventDefault', async () => {
     let captured: CatalogFilters = EMPTY_FILTERS;
     const api = await render(
       <FilterBar
@@ -55,24 +62,13 @@ describe('FilterBar keyboard activation (T3-B5)', () => {
       />,
     );
     const chip = api.getByTestId('filter-high-school');
-    fireEvent(chip, 'keyDown', { key: ' ' });
+    const evt = keyEvent(' ');
+    fireEvent(chip, 'keyDown', evt);
     expect(captured.learnerCategories).toContain('high-school');
+    expect(evt.preventDefault).toHaveBeenCalledTimes(1);
   });
 
-  it('Enter key toggles a filter chip on', async () => {
-    let captured: CatalogFilters = EMPTY_FILTERS;
-    const api = await render(
-      <FilterBar
-        filters={EMPTY_FILTERS}
-        onFiltersChange={(f) => { captured = f; }}
-      />,
-    );
-    const chip = api.getByTestId('filter-high-school');
-    fireEvent(chip, 'keyDown', { key: 'Enter' });
-    expect(captured.learnerCategories).toContain('high-school');
-  });
-
-  it('Space key toggles an active chip off', async () => {
+  it('Space toggles an active chip off', async () => {
     const activeFilters: CatalogFilters = {
       ...EMPTY_FILTERS,
       learnerCategories: ['high-school'],
@@ -85,11 +81,13 @@ describe('FilterBar keyboard activation (T3-B5)', () => {
       />,
     );
     const chip = api.getByTestId('filter-high-school');
-    fireEvent(chip, 'keyDown', { key: ' ' });
+    fireEvent(chip, 'keyDown', keyEvent(' '));
     expect(captured.learnerCategories).not.toContain('high-school');
   });
 
-  it('unrelated keys do not trigger a toggle', async () => {
+  it('Enter, Tab, and Escape keyDown do not trigger onFiltersChange', async () => {
+    // Enter is handled by native onPress (React Native Web fires press on Enter);
+    // it must not double-fire from our keyDown handler.
     let callCount = 0;
     const api = await render(
       <FilterBar
@@ -98,8 +96,9 @@ describe('FilterBar keyboard activation (T3-B5)', () => {
       />,
     );
     const chip = api.getByTestId('filter-high-school');
-    fireEvent(chip, 'keyDown', { key: 'Tab' });
-    fireEvent(chip, 'keyDown', { key: 'Escape' });
+    fireEvent(chip, 'keyDown', keyEvent('Enter'));
+    fireEvent(chip, 'keyDown', keyEvent('Tab'));
+    fireEvent(chip, 'keyDown', keyEvent('Escape'));
     expect(callCount).toBe(0);
   });
 });

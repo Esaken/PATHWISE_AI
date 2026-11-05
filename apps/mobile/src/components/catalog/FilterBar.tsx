@@ -1,4 +1,4 @@
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { type KeyDownEvent, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { useState } from 'react';
 import type { CatalogFilters, LearnerCategory, Topic, OpportunityCategory, CreditClass, BudgetFilter, DeliveryMode } from '@/catalog/types';
 import { BrandColors } from '@/constants/theme';
@@ -27,23 +27,27 @@ function Chip({
   accessibilityLabel: string;
 }) {
   const [focused, setFocused] = useState(false);
-  const keyHandler = ({ key, preventDefault }: { key: string; preventDefault?: () => void }) => {
-    if (key === ' ' || key === 'Enter') {
-      preventDefault?.();
+
+  function handleKeyDown(e: KeyDownEvent) {
+    // Space: prevent page scroll and toggle. Enter is intentionally omitted here;
+    // React Native Web fires onPress for Enter on focused Pressable elements.
+    if (e.nativeEvent.key === ' ') {
+      e.preventDefault();
       onToggle();
     }
-  };
+  }
+
   return (
     <Pressable
       onPress={onToggle}
+      onKeyDown={handleKeyDown}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      accessibilityRole="checkbox"
+      role="checkbox"
+      aria-checked={active}
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ checked: active }}
       style={[styles.chip, active && styles.chipActive, focused && styles.chipFocused, focused && webFocusRing]}
-      testID={testID}
-      {...({ onKeyDown: keyHandler } as unknown as object)}>
+      testID={testID}>
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     </Pressable>
   );
