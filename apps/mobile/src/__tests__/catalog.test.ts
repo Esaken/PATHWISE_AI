@@ -538,4 +538,130 @@ describe('filtersFromSession', () => {
     const f = filtersFromSession(answers);
     expect(f.topics).toContain('alternative-credit');
   });
+
+  it('Louisiana adult with specific career goal does NOT get responsible-vendor topic injected', () => {
+    const answers: OnboardingAnswers = { learnerType: 'adult', careerGoal: 'technology', careerGoalOther: '', goal: null, budget: null, stateRegion: 'LA' };
+    const f = filtersFromSession(answers);
+    expect(f.louisianaOnly).toBe(true);
+    expect(f.topics).not.toContain('responsible-vendor');
+    expect(f.topics).toContain('cybersecurity');
+  });
+
+  it('Louisiana adult with no career goal gets responsible-vendor topic', () => {
+    const answers: OnboardingAnswers = { learnerType: 'adult', careerGoal: null, careerGoalOther: '', goal: null, budget: null, stateRegion: 'LA' };
+    const f = filtersFromSession(answers);
+    expect(f.louisianaOnly).toBe(true);
+    expect(f.topics).toContain('responsible-vendor');
+  });
+});
+
+// ─── Factual invariant regression tests (T3-B1, T3-B2, T3-B3 remediation) ───
+
+describe('catalog factual invariants', () => {
+  it('all verification dates use normalized YYYY-MM-DD format', () => {
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+    for (const opp of CATALOG) {
+      expect(opp.verification.checkedOn).toMatch(isoDate);
+    }
+  });
+
+  it('cisco-intro-cybersecurity has known duration of 6 hours', () => {
+    const opp = CATALOG.find((o) => o.id === 'cisco-intro-cybersecurity');
+    expect(opp?.duration.kind).toBe('known');
+    if (opp?.duration.kind === 'known') {
+      expect(opp.duration.value).toBe(6);
+      expect(opp.duration.unit).toBe('hours');
+    }
+  });
+
+  it('cisco-networking-basics has known duration of 22 hours', () => {
+    const opp = CATALOG.find((o) => o.id === 'cisco-networking-basics');
+    expect(opp?.duration.kind).toBe('known');
+    if (opp?.duration.kind === 'known') {
+      expect(opp.duration.value).toBe(22);
+      expect(opp.duration.unit).toBe('hours');
+    }
+  });
+
+  it('clep-exam-program has unknown duration (exam-specific, not universal)', () => {
+    const opp = CATALOG.find((o) => o.id === 'clep-exam-program');
+    expect(opp?.duration.kind).toBe('unknown');
+  });
+
+  it('clep-exam-program has hybrid availability (remote proctoring + test centers)', () => {
+    const opp = CATALOG.find((o) => o.id === 'clep-exam-program');
+    expect(opp?.availability.mode).toBe('hybrid');
+  });
+
+  it('louisiana-atc-responsible-vendor has hybrid availability (provider-dependent delivery)', () => {
+    const opp = CATALOG.find((o) => o.id === 'louisiana-atc-responsible-vendor');
+    expect(opp?.availability.mode).toBe('hybrid');
+  });
+
+  it('no Cisco record claims duration was not stated in evidence notes', () => {
+    const cisco = CATALOG.filter((o) => o.id.startsWith('cisco-'));
+    for (const opp of cisco) {
+      expect(opp.verification.evidenceNotes.toLowerCase()).not.toContain('not stated on page');
+    }
+  });
+
+  it('louisiana RV provider field does not identify ATC as the training provider', () => {
+    const opp = CATALOG.find((o) => o.id === 'louisiana-atc-responsible-vendor');
+    // Provider should reference approved providers, not ATC as the training provider
+    expect(opp?.provider).not.toBe('Louisiana Office of Alcohol and Tobacco Control (ATC)');
+    expect(opp?.provider.toLowerCase()).toContain('approved');
+  });
+});
+
+// ─── Validator improvements (T3-B1 date, cross-field) ────────────────────────
+
+describe('validator: improved date and cross-field checks', () => {
+  it('rejects single-digit day in checkedOn (YYYY-MM-D is invalid)', () => {
+    const bad = [
+      {
+        ...CATALOG[0],
+        verification: { ...CATALOG[0].verification, checkedOn: '2026-11-4' },
+      },
+    ] as unknown as readonly Opportunity[];
+    const errors = validateCatalog(bad);
+    expect(errors.some((e) => e.field === 'verification.checkedOn')).toBe(true);
+  });
+
+  it('rejects single-digit month in checkedOn (YYYY-M-DD is invalid)', () => {
+    const bad = [
+      {
+        ...CATALOG[0],
+        verification: { ...CATALOG[0].verification, checkedOn: '2026-1-04' },
+      },
+    ] as unknown as readonly Opportunity[];
+    const errors = validateCatalog(bad);
+    expect(errors.some((e) => e.field === 'verification.checkedOn')).toBe(true);
+  });
+
+  it('rejects impossible month (month 13)', () => {
+    const bad = [
+      {
+        ...CATALOG[0],
+        verification: { ...CATALOG[0].verification, checkedOn: '2026-13-04' },
+      },
+    ] as unknown as readonly Opportunity[];
+    const errors = validateCatalog(bad);
+    expect(errors.some((e) => e.field === 'verification.checkedOn')).toBe(true);
+  });
+
+  it('rejects negative minimumAge', () => {
+    const bad = [
+      { ...CATALOG[0], learnerEligibility: { ...CATALOG[0].learnerEligibility, minimumAge: -1 } },
+    ] as unknown as readonly Opportunity[];
+    const errors = validateCatalog(bad);
+    expect(errors.some((e) => e.field === 'learnerEligibility.minimumAge')).toBe(true);
+  });
+
+  it('accepts non-negative minimumAge', () => {
+    const ok = [
+      { ...CATALOG[0], learnerEligibility: { ...CATALOG[0].learnerEligibility, minimumAge: 0 } },
+    ] as unknown as readonly Opportunity[];
+    const errors = validateCatalog(ok);
+    expect(errors.filter((e) => e.field === 'learnerEligibility.minimumAge')).toEqual([]);
+  });
 });

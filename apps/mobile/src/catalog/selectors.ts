@@ -192,8 +192,10 @@ export function filtersFromSession(answers: OnboardingAnswers): CatalogFilters {
   const topics = deriveTopics(answers);
   const louisianaOnly = deriveLouisianaOnly(answers);
 
-  // For Louisiana adult with responsible-vendor affinity, add topic explicitly
-  if (louisianaOnly && !topics.includes('responsible-vendor')) {
+  // Add responsible-vendor topic only when no career-derived topics were produced.
+  // A Louisiana adult who selected a specific career interest (e.g. technology) already
+  // has relevant topics and should not have RV training injected solely based on location.
+  if (louisianaOnly && topics.length === 0 && !topics.includes('responsible-vendor')) {
     topics.push('responsible-vendor');
   }
 

@@ -11,8 +11,10 @@ function isHttpsUrl(url: string): boolean {
 }
 
 function isValidDateString(s: string): boolean {
-  // Accepts YYYY-M-D or YYYY-MM-DD
-  return /^\d{4}-\d{1,2}-\d{1,2}$/.test(s);
+  // Requires normalized ISO YYYY-MM-DD (two-digit month and day)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [, m, d] = s.split('-').map(Number);
+  return m >= 1 && m <= 12 && d >= 1 && d <= 31;
 }
 
 function validatePrice(id: string, price: Price): ValidationError[] {
@@ -96,6 +98,15 @@ function validateOpportunity(opp: Opportunity): ValidationError[] {
     errs.push({ id, field: 'learnerEligibility.summary', message: 'required' });
   }
   if (opp.topics.length === 0) errs.push({ id, field: 'topics', message: 'at least one topic required' });
+
+  if (opp.learnerEligibility.minimumAge !== null && opp.learnerEligibility.minimumAge < 0) {
+    errs.push({ id, field: 'learnerEligibility.minimumAge', message: 'must be non-negative' });
+  }
+
+  // Cross-field: in-person availability must have at least one jurisdiction
+  if (opp.availability.mode === 'in-person' && opp.availability.jurisdictions.length === 0) {
+    errs.push({ id, field: 'availability.jurisdictions', message: 'in-person availability requires at least one jurisdiction' });
+  }
 
   errs.push(...validatePrice(id, opp.price));
   errs.push(...validateDuration(id, opp.duration));
