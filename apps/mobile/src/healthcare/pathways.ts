@@ -413,7 +413,7 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
       kind: 'clinical',
       title: 'Complete the PN curriculum and clinical hours',
       description:
-        'PN programs are typically approximately 12 months. Complete all required coursework and supervised clinical training.',
+        'Complete all required coursework and supervised clinical training. Confirm program duration directly with the institution.',
       requiresConfirmation: false,
     },
     {

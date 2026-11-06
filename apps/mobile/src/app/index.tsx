@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import {
   Dimensions,
   type KeyDownEvent,
+  Platform,
   Pressable,
   type PressableInstance,
   ScrollView,
@@ -41,6 +42,11 @@ const PATHWAYS: {
     icon: '💼',
   },
 ];
+
+const webCardFocusRing =
+  Platform.OS === 'web'
+    ? ({ boxShadow: '0 0 0 2px #FFFFFF, 0 0 0 4px #6C5CE7' } as unknown as object)
+    : {};
 
 type PathwayCardProps = {
   pathway: (typeof PATHWAYS)[number];
@@ -99,6 +105,7 @@ function PathwayCard({ pathway, selected, onSelect, onNavigate, extraStyle, ref 
         extraStyle,
         selected && styles.cardSelected,
         focused && styles.cardFocused,
+        focused && webCardFocusRing,
         pressed && styles.cardPressed,
       ]}>
       <View style={styles.cardTop}>

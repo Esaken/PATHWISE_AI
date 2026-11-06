@@ -72,6 +72,10 @@ function InvalidIdScreen() {
   );
 }
 
+export function generateStaticParams() {
+  return CATALOG.map((o) => ({ id: o.id }));
+}
+
 export default function OpportunityDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const opp = CATALOG.find((o) => o.id === id);

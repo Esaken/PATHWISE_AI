@@ -36,7 +36,7 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     locationSummary: 'New Orleans, LA (Charity School of Nursing)',
     deliveryFormat: 'in-person',
     durationNote:
-      'Duration not confirmed on verified source. Typical ADN programs are approximately 2 years following prerequisite completion.',
+      'Duration not confirmed on verified source.',
     tuitionNote: null,
     applicationRequirements: [
       'High school diploma or equivalent (verify current requirement with program)',
@@ -169,7 +169,7 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     locationSummary: 'New Orleans, LA (Charity School of Nursing)',
     deliveryFormat: 'in-person',
     durationNote:
-      'Duration not confirmed on verified source. Typical PN programs are approximately 12 months.',
+      'Duration not confirmed on verified source.',
     tuitionNote: null,
     applicationRequirements: [
       'Verify current admission requirements, prerequisites, and application schedule directly with Delgado Community College',

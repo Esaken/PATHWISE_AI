@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandColors, MaxContentWidth } from '@/constants/theme';
 import { useSession } from '@/context/SessionContext';
-import { getCareerById } from '@/healthcare/careers';
+import { getCareerById, HEALTHCARE_CAREERS } from '@/healthcare/careers';
 import { buildHealthcarePathway } from '@/healthcare/pathways';
 import { getProgramById, HEALTHCARE_PROGRAMS } from '@/healthcare/programs';
 import type { MilestoneKind, PathwayMilestone, HealthcareProgram } from '@/healthcare/types';
@@ -38,13 +38,13 @@ const KIND_LABELS: Record<MilestoneKind, string> = {
 };
 
 const KIND_COLORS: Record<MilestoneKind, string> = {
-  preparation: '#7B8FA6',
+  preparation: '#4A6680',
   education: BrandColors.primary,
-  clinical: '#00897B',
-  examination: '#E67E22',
-  licensure: '#27AE60',
-  registry: '#27AE60',
-  employment: '#8E44AD',
+  clinical: '#00695C',
+  examination: '#B45309',
+  licensure: '#166534',
+  registry: '#166534',
+  employment: '#6D28D9',
 };
 
 // ─── Milestone step ───────────────────────────────────────────────────────────
@@ -159,6 +159,10 @@ function ProgramCard({ program }: { program: HealthcareProgram }) {
       </Pressable>
     </View>
   );
+}
+
+export function generateStaticParams() {
+  return HEALTHCARE_CAREERS.map((c) => ({ careerId: c.id }));
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -592,7 +596,7 @@ const styles = StyleSheet.create({
   confirmBadge: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#E67E22',
+    color: '#92400E',
     backgroundColor: '#FEF3E2',
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -647,7 +651,7 @@ const styles = StyleSheet.create({
     color: BrandColors.primary,
   },
   programStatusRecheck: {
-    color: '#E67E22',
+    color: '#92400E',
   },
   programTitle: {
     fontSize: 16,

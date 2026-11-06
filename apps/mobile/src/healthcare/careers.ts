@@ -124,8 +124,8 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
         kind: 'diploma',
         label: 'Practical Nursing Diploma or Certificate',
         description:
-          'Typically a 12-month program approved by the state board of practical nurse examiners. Graduates are eligible for the NCLEX-PN licensure exam.',
-        typicalDurationMonths: { min: 10, max: 14 },
+          'An approved program governed by the state board of practical nurse examiners. Graduates are eligible for the NCLEX-PN licensure exam. Confirm program duration directly with the institution.',
+        typicalDurationMonths: null,
         minimumEducationPrerequisite: 'High school diploma or GED; program-specific prerequisites',
         notes:
           'Programs must be approved by LSBPNE for graduates to apply for Louisiana LPN licensure. Confirm approval status before enrolling.',

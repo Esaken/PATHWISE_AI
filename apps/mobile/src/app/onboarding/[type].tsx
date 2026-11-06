@@ -657,6 +657,10 @@ function CompletionScreen({ learnerType }: { learnerType: LearnerType }) {
 
 const VALID_TYPES: LearnerType[] = ['high-school', 'university', 'adult'];
 
+export function generateStaticParams() {
+  return VALID_TYPES.map((type) => ({ type }));
+}
+
 export default function OnboardingWizard() {
   const { type } = useLocalSearchParams<{ type: string }>();
 
