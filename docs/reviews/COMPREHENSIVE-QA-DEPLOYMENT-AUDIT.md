@@ -1,10 +1,10 @@
-# Pathwise AI — Comprehensive QA and Free Deployment Audit
+﻿# Pathwise AI â€” Comprehensive QA and Free Deployment Audit
 
-**Audit date:** 2026-11-06  
-**Branch:** `feature/task-005-healthcare-pathways`  
-**Commit:** `b8a29b4ec97f753e6af63eef40ffed43328ac19c`  
-**Base:** `main` at `9be4c0a091deaf09bd37cee9baae7b747af4c562`  
-**Verdict:** **FAIL — not ready for public deployment**
+**Audit date:** 2026-11-06
+**Branch:** `feature/task-005-healthcare-pathways`
+**Commit:** `b8a29b4ec97f753e6af63eef40ffed43328ac19c`
+**Base:** `main` at `9be4c0a091deaf09bd37cee9baae7b747af4c562`
+**Verdict:** **FAIL â€” not ready for public deployment**
 
 The core prototype works through normal client-side navigation and all 522 automated tests pass. The latest remediation fixes healthcare-card Enter activation and the welcome screen's initial desktop composition. Public deployment is nevertheless blocked by broken static deep-link routing, unresolved welcome focus visibility, a remaining hydration failure under fallback routing, and insufficient contrast in healthcare status text.
 
@@ -19,7 +19,7 @@ The core prototype works through normal client-side navigation and all 522 autom
 
 ## 2. Release blockers
 
-### AUD-B1 — Dynamic routes return HTTP 404 from the production static server
+### AUD-B1 â€” Dynamic routes return HTTP 404 from the production static server
 
 **Severity:** Critical / deployment-blocking
 
@@ -44,7 +44,7 @@ This means refreshes, bookmarks, shared links, and direct competition-demo navig
 
 **Required remediation:** either add complete `generateStaticParams` coverage for the three learner types, six healthcare careers, and five opportunity IDs, or deliberately use SPA output plus a tested host fallback. Re-export, serve with the intended production routing semantics, and verify direct loads and refreshes for every dynamic route.
 
-### AUD-B2 — Welcome learner cards still lack a distinct visible keyboard focus indicator
+### AUD-B2 â€” Welcome learner cards still lack a distinct visible keyboard focus indicator
 
 **Severity:** High / accessibility release blocker (existing TASK-001 B3)
 
@@ -58,7 +58,7 @@ The focused state is not visually distinguishable from selection. Source: `apps/
 
 **Required remediation:** use a distinct focus-visible ring with at least 3:1 non-text contrast, verify it on selected and unselected radios, and re-test Tab, Shift+Tab, arrow navigation, Space, and Enter at all target widths and 200% zoom.
 
-### AUD-B3 — Direct protected dynamic fallback can still produce React hydration error #418
+### AUD-B3 â€” Direct protected dynamic fallback can still produce React hydration error #418
 
 **Severity:** High / production stability
 
@@ -66,11 +66,11 @@ The welcome page itself no longer emitted #418 at 390, 768, or 1440, so the narr
 
 This is currently masked by AUD-B1 on the official static server, which returns 404 first. Routing remediation must not merely hide the 404 with a catch-all rewrite; it must also produce hydration-compatible HTML for dynamic protected routes.
 
-### AUD-B4 — Healthcare status text fails WCAG contrast
+### AUD-B4 â€” Healthcare status text fails WCAG contrast
 
 **Severity:** High / accessibility
 
-The 10 px “Verify with provider” badge uses `#E67E22` on `#FEF3E2`, which calculates to approximately **2.60:1**, below WCAG AA's 4.5:1 requirement for normal text. The same orange is also used for examination labels. Source: `apps/mobile/src/app/healthcare/pathways/[careerId].tsx:587-596` and `:40-47`.
+The 10 px â€œVerify with providerâ€ badge uses `#E67E22` on `#FEF3E2`, which calculates to approximately **2.60:1**, below WCAG AA's 4.5:1 requirement for normal text. The same orange is also used for examination labels. Source: `apps/mobile/src/app/healthcare/pathways/[careerId].tsx:587-596` and `:40-47`.
 
 **Required remediation:** darken the text color or change the background, audit every milestone-kind color on its actual background, and validate computed colors in Chromium.
 
@@ -80,10 +80,10 @@ Production export, Chromium 156, real pointer/key input:
 
 | Journey/check | Result |
 |---|---|
-| High school → healthcare → RN | PASS; RN route and high-school-specific nine-step content rendered |
-| University → healthcare → RN | PASS; prerequisite-equivalency language did not assume transfer |
-| Adult → healthcare → CNA | PASS; six-step adult pathway rendered |
-| Adult → healthcare → LPN | PASS; eight-step adult pathway rendered |
+| High school â†’ healthcare â†’ RN | PASS; RN route and high-school-specific nine-step content rendered |
+| University â†’ healthcare â†’ RN | PASS; prerequisite-equivalency language did not assume transfer |
+| Adult â†’ healthcare â†’ CNA | PASS; six-step adult pathway rendered |
+| Adult â†’ healthcare â†’ LPN | PASS; eight-step adult pathway rendered |
 | All six healthcare cards/routes | PASS |
 | Browser Back and Forward | PASS; Back returned to healthcare and Forward restored CNA |
 | Recommendations | PASS; healthcare profile honestly showed zero verified matches |
@@ -98,12 +98,12 @@ No crashes or dead ends occurred during ordinary in-app journeys. The largest de
 ## 4. Accessibility results
 
 - T5-B4 is **resolved**: focused RN card + Enter navigated to `/healthcare/pathways/rn`; focused LPN + Space navigated to its pathway.
-- Official program source link exposed role `link`, an explicit accessible name, `tabIndex=0`, and 148×44 px bounds. Enter opened the official Delgado URL.
+- Official program source link exposed role `link`, an explicit accessible name, `tabIndex=0`, and 148Ã—44 px bounds. Enter opened the official Delgado URL.
 - Chromium accessibility tree exposed named buttons, headings, radio groups, and radio options.
 - Failed onboarding submission exposed `aria-invalid=true` on the Career or skill goal radio group and associated it with `career-goal-choice-error` through `aria-describedby`.
 - Healthcare pathway visible controls measured at least 44 px high; the smallest measured width was 108.4 px.
 - Healthcare card focus rings were visible. Welcome radio focus failed as AUD-B2.
-- Color checks passed for primary white text (`#6C5CE7/#FFFFFF` ≈ 4.86:1), secondary body text (`#6E6193/#FFFFFF` ≈ 5.53:1), and purple-header secondary text (`#C4B9F9/#1E1458` ≈ 8.99:1), but healthcare orange status text failed as AUD-B4.
+- Color checks passed for primary white text (`#6C5CE7/#FFFFFF` â‰ˆ 4.86:1), secondary body text (`#6E6193/#FFFFFF` â‰ˆ 5.53:1), and purple-header secondary text (`#C4B9F9/#1E1458` â‰ˆ 8.99:1), but healthcare orange status text failed as AUD-B4.
 - A complete screen-reader session with NVDA/VoiceOver was not performed; Chromium AX inspection is not a substitute for assistive-technology usability testing.
 
 ## 5. Responsive results
@@ -153,16 +153,16 @@ Primary-source spot verification supports the major safety claims:
 
 - LDH requires state approval of nurse-aide training programs and competency evaluation before registry placement. LDH's current materials distinguish core program hours from clinical-site orientation.
 - Delgado's official CNA page states LDH approval, at least 80 hours including at least 40 hours in long-term care, an eight-week format, and an estimated $1,673.66 tuition/fees figure.
-- LSBPNE's current program list shows BRCC Acadian as provisional, Delgado City Park as provisional, and Delgado Sidney Collier as full for 2025–26.
+- LSBPNE's current program list shows BRCC Acadian as provisional, Delgado City Park as provisional, and Delgado Sidney Collier as full for 2025â€“26.
 - Delgado's official nursing page states full RN board approval and ACEN continuing accreditation, while its PN program is separately governed by LSBPNE.
 - LSBN material supports full approval for Delgado, BRCC, and LSUHSC pre-licensure RN programs in the reviewed reporting material.
 - RN/LPN graduation is consistently distinguished from licensure; CNA registry placement is distinguished from RN/LPN licensure; allied-health credentials are described as employer/program dependent.
 
 Remaining content risks:
 
-- `programs.ts:38-39` says Delgado ADN duration is unconfirmed, then adds a generic “approximately 2 years” claim without claim-level source support.
+- `programs.ts:38-39` says Delgado ADN duration is unconfirmed, then adds a generic â€œapproximately 2 yearsâ€ claim without claim-level source support.
 - `programs.ts:171-172` similarly adds a generic approximately 12-month Delgado PN duration despite saying it is not confirmed.
-- `careers.ts:127-128` encodes a 10–14 month LPN typical range without a stored claim-specific source.
+- `careers.ts:127-128` encodes a 10â€“14 month LPN typical range without a stored claim-specific source.
 
 These should be removed, set to unknown, or given exact authoritative evidence. Healthcare data is time-sensitive; approval and application statuses require a checked date and re-verification immediately before any later public reuse.
 
@@ -174,7 +174,7 @@ The current application performs **no AI inference**.
 - Healthcare pathways are selected from 18 hardcoded milestone sets by learner category and career ID.
 - There is no LLM SDK, model endpoint, embedding service, external AI API, inference server, or API key.
 - The five-record catalog and six healthcare-program records are local curated data.
-- “Pathwise AI” is currently an aspirational brand name. Public copy should say “personalized, rules-based recommendations” and must not claim generative AI, predictive modeling, or model-generated roadmaps.
+- â€œPathwise AIâ€ is currently an aspirational brand name. Public copy should say â€œpersonalized, rules-based recommendationsâ€ and must not claim generative AI, predictive modeling, or model-generated roadmaps.
 - Healthcare recommendations are currently empty because the opportunity catalog has no healthcare opportunity records; users instead receive healthcare pathway content.
 
 ## 10. Free deployment feasibility
@@ -188,7 +188,7 @@ All four platforms can host the 1.65 MB static export after AUD-B1 is fixed, but
 | **Vercel Hobby** | Technically feasible, policy caution | Static limits are ample, but Hobby is restricted to personal/non-commercial use. A competition prototype may be non-commercial, but the owner should confirm it fits Vercel's fair-use terms. Dynamic-route configuration remains mandatory. |
 | **Expo Hosting** | Strong ecosystem fit | Expo's recommended option and supports Expo Router deployments, SSL, preview/production URLs, and free usage within plan quotas. It requires an Expo account/EAS setup. Static dynamic parameters still need correct export/routing behavior; Expo's own static server currently proves the project is incomplete. |
 
-**Recommended path:** fix AUD-B1–B4, then deploy a preview to Cloudflare Pages or Expo Hosting, apply HTTPS/security headers, and repeat the entire direct-link/refresh matrix against the real public URL. Cloudflare Pages is the most predictable no-cost temporary choice; Expo Hosting is the lowest-friction Expo-native alternative.
+**Recommended path:** fix AUD-B1â€“B4, then deploy a preview to Cloudflare Pages or Expo Hosting, apply HTTPS/security headers, and repeat the entire direct-link/refresh matrix against the real public URL. Cloudflare Pages is the most predictable no-cost temporary choice; Expo Hosting is the lowest-friction Expo-native alternative.
 
 Official references used for deployment evaluation:
 
