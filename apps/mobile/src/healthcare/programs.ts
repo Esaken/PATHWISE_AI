@@ -1,6 +1,7 @@
 import type { HealthcareProgram } from './types';
 
-// All program records verified from official institution websites on 2026-11-05.
+// Program records verified from official institution websites.
+// Initial verification: 2026-11-05. Updated: 2026-11-06.
 // Fields that could not be confirmed from official sources are set to null.
 // Do not modify fields to claim tuition, deadlines, or eligibility that have
 // not been independently verified.
@@ -8,6 +9,8 @@ import type { HealthcareProgram } from './types';
 // Verified source URLs:
 //   Delgado Community College (Charity School of Nursing):
 //     https://www.dcc.edu/academics/charity-school-nursing/
+//   Delgado Community College (CNA program, specific page):
+//     https://dcc.edu/academics/charity-school-nursing/programs/certified-nursing-assistant.aspx
 //   Baton Rouge Community College (ASN):
 //     https://mybrcc.edu/academics/nursing-and-allied-health/asnursing.php
 //   Baton Rouge Community College (Practical Nursing):
@@ -16,6 +19,8 @@ import type { HealthcareProgram } from './types';
 //     https://nursing.lsuhsc.edu/bsn/
 //   LSU Health BSN Admission Criteria:
 //     https://nursing.lsuhsc.edu/bsn/admission.aspx
+//   LSBPNE Approved PN Program List (2025-26):
+//     https://www.lsbpne.la.gov/education/pn-program-list/
 
 export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
   // ─── RN programs ─────────────────────────────────────────────────────────
@@ -174,19 +179,20 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     ],
     approvals: [
       {
-        kind: 'state-board-approved',
+        kind: 'provisional',
         approver: 'Louisiana State Board of Practical Nurse Examiners (LSBPNE)',
-        evidenceUrl: 'https://www.dcc.edu/academics/charity-school-nursing/',
+        evidenceUrl: 'https://www.lsbpne.la.gov/education/pn-program-list/',
         notes:
-          'LSBPNE approval stated on the official Charity School of Nursing program page. Confirm current approval status with LSBPNE (lsbpne.la.gov).',
+          'Campus-specific approval status per LSBPNE approved PN program list (2025–26): City Park campus = PROVISIONAL; Sidney Collier campus = FULL. This record does not specify which campus(es) are covered. Confirm the approval status of the campus you plan to attend directly with LSBPNE before enrolling.',
       },
     ],
     officialUrl: 'https://www.dcc.edu/academics/charity-school-nursing/',
-    verifiedOn: '2026-11-05',
+    verifiedOn: '2026-11-06',
     verificationStatus: 'verified-official-source',
     warnings: [
+      'LSBPNE approval status is campus-specific: City Park = PROVISIONAL, Sidney Collier = FULL (2025–26). Confirm the approval status of the specific campus you will attend with LSBPNE (lsbpne.la.gov) before enrolling.',
       'Verify current admission requirements, prerequisites, application deadlines, and program availability directly with Delgado Community College.',
-      'Only programs approved by LSBPNE qualify graduates to sit for the NCLEX-PN in Louisiana. Confirm current approval status with LSBPNE.',
+      'Only programs on the LSBPNE approved list qualify graduates to sit for the NCLEX-PN in Louisiana.',
     ],
   },
 
@@ -210,19 +216,19 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     ],
     approvals: [
       {
-        kind: 'needs-verification',
+        kind: 'provisional',
         approver: 'Louisiana State Board of Practical Nurse Examiners (LSBPNE)',
-        evidenceUrl: null,
+        evidenceUrl: 'https://www.lsbpne.la.gov/education/pn-program-list/',
         notes:
-          'Approval by LSBPNE is required for graduates to sit for the NCLEX-PN in Louisiana. Confirm current approval status with LSBPNE (lsbpne.la.gov) and with BRCC directly.',
+          'BRCC Acadian Campus listed as PROVISIONAL on the LSBPNE approved PN program list for 2025–26. Provisional status means the program does not hold full LSBPNE approval. Confirm current approval status directly with LSBPNE before enrolling. Only programs on the LSBPNE list qualify graduates to sit for the NCLEX-PN in Louisiana.',
       },
     ],
     officialUrl: 'https://mybrcc.edu/academics/nursing-and-allied-health/tdpracticalnursing.php',
-    verifiedOn: '2026-11-05',
+    verifiedOn: '2026-11-06',
     verificationStatus: 'verified-official-source',
     warnings: [
+      'BRCC Practical Nursing (Acadian Campus) holds PROVISIONAL status on the LSBPNE approved program list for 2025–26. Provisional is not full approval. Confirm current status with LSBPNE (lsbpne.la.gov) before enrolling.',
       'Verify current admission requirements, prerequisites, and application schedule with BRCC directly.',
-      'Confirm LSBPNE approval status for this program before enrolling.',
     ],
   },
 
@@ -239,8 +245,9 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     locationSummary: 'New Orleans, LA (Charity School of Nursing)',
     deliveryFormat: 'in-person',
     durationNote:
-      'Louisiana requires a minimum of 75 hours of training (classroom instruction and supervised practical training). Actual program schedule confirmed by institution.',
-    tuitionNote: null,
+      'At least 80 hours total; 8-week program including at least 40 hours of training in a long-term care facility. Verified from official Delgado CNA program page on 2026-11-06.',
+    tuitionNote:
+      'Estimated cost of $1,673.66 for tuition and fees, as published on the official Delgado CNA program page on 2026-11-06. Verify current cost directly with Delgado Community College.',
     applicationRequirements: [
       'Verify current admission requirements, minimum age requirements, and scheduling directly with Delgado Community College',
     ],
@@ -249,20 +256,21 @@ export const HEALTHCARE_PROGRAMS: readonly HealthcareProgram[] = [
     ],
     approvals: [
       {
-        kind: 'needs-verification',
+        kind: 'state-board-approved',
         approver: 'Louisiana Department of Health (LDH)',
-        evidenceUrl: null,
+        evidenceUrl: 'https://dcc.edu/academics/charity-school-nursing/programs/certified-nursing-assistant.aspx',
         notes:
-          'Louisiana CNA training programs must be state-approved by LDH. The Charity School of Nursing page lists CNA training as an offering. Confirm current LDH approval status directly with LDH or the institution.',
+          'Official Delgado CNA program page states the program is approved by the Louisiana Department of Health (LDH). LDH confirmation of this listing is noted in QA review. Confirm current approval status directly with LDH or the institution before enrolling.',
       },
     ],
-    officialUrl: 'https://www.dcc.edu/academics/charity-school-nursing/',
-    verifiedOn: '2026-11-05',
-    verificationStatus: 'needs-recheck',
+    officialUrl: 'https://dcc.edu/academics/charity-school-nursing/programs/certified-nursing-assistant.aspx',
+    verifiedOn: '2026-11-06',
+    verificationStatus: 'verified-official-source',
     warnings: [
       'CNA nurse aide registry placement is not equivalent to RN or LPN professional licensure.',
-      'Confirm current LDH state-approval status for this program before enrolling. Only LDH-approved programs qualify graduates for the competency evaluation.',
-      'Confirm current program availability, schedule, cost, and minimum age requirements with Delgado Community College directly.',
+      'Verify current LDH approval status directly with LDH or the institution before enrolling. Only LDH-approved programs qualify graduates for the competency evaluation.',
+      'Tuition and fee amounts are estimates from the official program page. Verify current costs directly with Delgado Community College.',
+      'Confirm current session availability, schedule, and minimum age requirements with Delgado Community College directly.',
     ],
   },
 ];

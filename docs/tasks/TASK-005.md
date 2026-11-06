@@ -1,6 +1,6 @@
 # TASK-005: Healthcare-First Career Pathways
 
-**Status:** Implementation complete — pending independent QA
+**Status:** Remediation complete (QA Review 1 T5-B1/T5-B2 addressed) — pending independent QA Review 2
 **Branch:** `feature/task-005-healthcare-pathways`
 **Base:** `main` at `9be4c0a`
 **Owner:** Claude Code

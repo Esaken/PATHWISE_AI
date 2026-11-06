@@ -213,9 +213,9 @@ describe('Program catalog integrity', () => {
     expect(cnaPrograms[0].id).toBe('delgado-cna');
   });
 
-  test('delgado-cna has needs-recheck verification status', () => {
+  test('delgado-cna has verified-official-source status (refreshed with specific CNA page)', () => {
     const p = getProgramById('delgado-cna');
-    expect(p?.verificationStatus).toBe('needs-recheck');
+    expect(p?.verificationStatus).toBe('verified-official-source');
   });
 
   test('brcc-asn has verified-official-source status', () => {
@@ -549,5 +549,269 @@ describe('Empty programs list', () => {
   test('pathway with empty programs list still returns milestones', () => {
     const p = buildHealthcarePathway(HS, 'rn', []);
     expect(p?.milestones.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── T5-B1 regression: Louisiana CNA 80-hour requirement ─────────────────────
+// These tests prevent regression to the incorrect 75-hour figure.
+// Source: Louisiana NATCEP rules (LDH); Delgado CNA program page states
+// "at least 80 hours" including 40 hours in a long-term care facility.
+
+describe('T5-B1 regression — Louisiana CNA 80-hour requirement', () => {
+  test('CNA education route notes reference 80-hour core curriculum, not 75 hours', () => {
+    const cna = getCareerById('cna');
+    const route = cna?.educationRoutes.find((r) => r.routeId === 'cna-training');
+    expect(route?.notes).not.toContain('75');
+    expect(route?.notes).toContain('80');
+  });
+
+  test('CNA education route notes distinguish core curriculum from clinical-site orientation', () => {
+    const cna = getCareerById('cna');
+    const route = cna?.educationRoutes.find((r) => r.routeId === 'cna-training');
+    expect(route?.notes).toMatch(/clinical.site orientation|separate/i);
+  });
+
+  test('CNA high-school training milestone uses 80-hour requirement', () => {
+    const p = buildHealthcarePathway(HS, 'cna', HEALTHCARE_PROGRAMS);
+    const trainingStep = p?.milestones.find((m) => m.id === 'cna-hs-3');
+    expect(trainingStep?.description).not.toContain('75');
+    expect(trainingStep?.description).toContain('80');
+  });
+
+  test('CNA university training milestone uses 80-hour requirement', () => {
+    const p = buildHealthcarePathway(UNIV, 'cna', HEALTHCARE_PROGRAMS);
+    const trainingStep = p?.milestones.find((m) => m.id === 'cna-univ-3');
+    expect(trainingStep?.description).not.toContain('75');
+    expect(trainingStep?.description).toContain('80');
+  });
+
+  test('CNA adult training milestone uses 80-hour requirement', () => {
+    const p = buildHealthcarePathway(ADULT, 'cna', HEALTHCARE_PROGRAMS);
+    const trainingStep = p?.milestones.find((m) => m.id === 'cna-adult-3');
+    expect(trainingStep?.description).not.toContain('75');
+    expect(trainingStep?.description).toContain('80');
+  });
+
+  test('CNA university training milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(UNIV, 'cna', HEALTHCARE_PROGRAMS);
+    const trainingStep = p?.milestones.find((m) => m.id === 'cna-univ-3');
+    expect(trainingStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('CNA adult training milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(ADULT, 'cna', HEALTHCARE_PROGRAMS);
+    const trainingStep = p?.milestones.find((m) => m.id === 'cna-adult-3');
+    expect(trainingStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('all three CNA pathways consistently reference 80 hours', () => {
+    for (const answers of [HS, UNIV, ADULT]) {
+      const p = buildHealthcarePathway(answers, 'cna', HEALTHCARE_PROGRAMS);
+      const educationStep = p?.milestones.find((m) => m.kind === 'education');
+      expect(educationStep?.description).not.toContain('75');
+      expect(educationStep?.description).toContain('80');
+    }
+  });
+
+  test('delgado-cna durationNote references at least 80 hours, not 75', () => {
+    const p = getProgramById('delgado-cna');
+    expect(p?.durationNote).not.toContain('75');
+    expect(p?.durationNote).toContain('80');
+  });
+});
+
+// ─── T5-B2 regression: allied-health unsupported duration ranges ───────────────
+// These tests prevent numeric duration ranges without claim-level evidence from
+// appearing as confirmed facts.
+
+describe('T5-B2 regression — allied-health program-dependent durations', () => {
+  test('MA certificate route has null typicalDurationMonths (not an unsupported range)', () => {
+    const ma = getCareerById('medical-assistant');
+    const cert = ma?.educationRoutes.find((r) => r.routeId === 'ma-certificate');
+    expect(cert?.typicalDurationMonths).toBeNull();
+  });
+
+  test('MA associate route has null typicalDurationMonths', () => {
+    const ma = getCareerById('medical-assistant');
+    const assoc = ma?.educationRoutes.find((r) => r.routeId === 'ma-associate');
+    expect(assoc?.typicalDurationMonths).toBeNull();
+  });
+
+  test('phlebotomy certificate route has null typicalDurationMonths', () => {
+    const ph = getCareerById('phlebotomy');
+    const cert = ph?.educationRoutes.find((r) => r.routeId === 'phlebotomy-certificate');
+    expect(cert?.typicalDurationMonths).toBeNull();
+  });
+
+  test('PCT certificate route has null typicalDurationMonths', () => {
+    const pct = getCareerById('patient-care-technician');
+    const cert = pct?.educationRoutes.find((r) => r.routeId === 'pct-certificate');
+    expect(cert?.typicalDurationMonths).toBeNull();
+  });
+
+  test('MA high-school pathway compare-options milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(HS, 'medical-assistant', HEALTHCARE_PROGRAMS);
+    const compareStep = p?.milestones.find((m) => m.id === 'ma-hs-3');
+    expect(compareStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('MA adult pathway compare-options milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(ADULT, 'medical-assistant', HEALTHCARE_PROGRAMS);
+    const compareStep = p?.milestones.find((m) => m.id === 'ma-adult-2');
+    expect(compareStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('phlebotomy high-school training milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(HS, 'phlebotomy', HEALTHCARE_PROGRAMS);
+    const edStep = p?.milestones.find((m) => m.id === 'phleb-hs-3');
+    expect(edStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('phlebotomy adult training milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(ADULT, 'phlebotomy', HEALTHCARE_PROGRAMS);
+    const edStep = p?.milestones.find((m) => m.id === 'phleb-adult-2');
+    expect(edStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('PCT high-school training milestone requiresConfirmation is true', () => {
+    const p = buildHealthcarePathway(HS, 'patient-care-technician', HEALTHCARE_PROGRAMS);
+    const edStep = p?.milestones.find((m) => m.id === 'pct-hs-4');
+    expect(edStep?.requiresConfirmation).toBe(true);
+  });
+
+  test('PCT milestone descriptions do not contain "3–6 months" as a confirmed fact', () => {
+    for (const answers of [HS, UNIV, ADULT]) {
+      const p = buildHealthcarePathway(answers, 'patient-care-technician', HEALTHCARE_PROGRAMS);
+      const edStep = p?.milestones.find((m) => m.kind === 'education');
+      expect(edStep?.description).not.toContain('3–6 months');
+    }
+  });
+
+  test('phlebotomy milestone descriptions do not contain "1–6 months" as a confirmed fact', () => {
+    for (const answers of [HS, UNIV, ADULT]) {
+      const p = buildHealthcarePathway(answers, 'phlebotomy', HEALTHCARE_PROGRAMS);
+      const edStep = p?.milestones.find((m) => m.kind === 'education');
+      expect(edStep?.description).not.toContain('1–6 months');
+    }
+  });
+});
+
+// ─── T5-N1 regression: BRCC PN provisional status ────────────────────────────
+
+describe('T5-N1 regression — BRCC PN provisional status', () => {
+  test('brcc-pn approval kind is provisional', () => {
+    const p = getProgramById('brcc-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.kind).toBe('provisional');
+  });
+
+  test('brcc-pn approval has LSBPNE evidence URL', () => {
+    const p = getProgramById('brcc-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.evidenceUrl).toContain('lsbpne.la.gov');
+  });
+
+  test('brcc-pn approval notes mention provisional', () => {
+    const p = getProgramById('brcc-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.notes?.toLowerCase()).toContain('provisional');
+  });
+
+  test('brcc-pn warning mentions provisional status', () => {
+    const p = getProgramById('brcc-pn');
+    const mentionsProvisional = p?.warnings.some((w) => w.toLowerCase().includes('provisional'));
+    expect(mentionsProvisional).toBe(true);
+  });
+});
+
+// ─── T5-N1 regression: Delgado PN campus-specific status ─────────────────────
+
+describe('T5-N1 regression — Delgado PN campus-specific approval', () => {
+  test('delgado-pn approval kind is provisional (campus-nuanced, not full)', () => {
+    const p = getProgramById('delgado-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.kind).toBe('provisional');
+  });
+
+  test('delgado-pn approval notes mention both campus statuses', () => {
+    const p = getProgramById('delgado-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.notes).toContain('City Park');
+    expect(approval?.notes).toContain('Sidney Collier');
+  });
+
+  test('delgado-pn approval has LSBPNE evidence URL', () => {
+    const p = getProgramById('delgado-pn');
+    const approval = p?.approvals[0];
+    expect(approval?.evidenceUrl).toContain('lsbpne.la.gov');
+  });
+});
+
+// ─── T5-N2 regression: Delgado CNA evidence refresh ─────────────────────────
+
+describe('T5-N2 regression — Delgado CNA verification', () => {
+  test('delgado-cna verificationStatus is verified-official-source (not needs-recheck)', () => {
+    const p = getProgramById('delgado-cna');
+    expect(p?.verificationStatus).toBe('verified-official-source');
+  });
+
+  test('delgado-cna approval kind is state-board-approved', () => {
+    const p = getProgramById('delgado-cna');
+    const approval = p?.approvals[0];
+    expect(approval?.kind).toBe('state-board-approved');
+  });
+
+  test('delgado-cna approval has specific CNA page as evidence URL', () => {
+    const p = getProgramById('delgado-cna');
+    const approval = p?.approvals[0];
+    expect(approval?.evidenceUrl).toContain('certified-nursing-assistant');
+  });
+
+  test('delgado-cna officialUrl points to specific CNA page', () => {
+    const p = getProgramById('delgado-cna');
+    expect(p?.officialUrl).toContain('certified-nursing-assistant');
+  });
+
+  test('delgado-cna tuitionNote reflects published estimate, not null', () => {
+    const p = getProgramById('delgado-cna');
+    expect(p?.tuitionNote).not.toBeNull();
+    expect(p?.tuitionNote).toContain('1,673');
+  });
+});
+
+// ─── T5-N3 regression: source verification ≠ regulatory approval ─────────────
+
+describe('T5-N3 regression — source verification and regulatory approval are distinct', () => {
+  test('provisional approval kind is a valid ProgramApprovalKind', () => {
+    const brccPn = getProgramById('brcc-pn');
+    const kind = brccPn?.approvals[0]?.kind;
+    // 'provisional' is now a valid kind; it is distinct from 'state-board-approved'
+    expect(kind).toBe('provisional');
+    expect(kind).not.toBe('state-board-approved');
+  });
+
+  test('needs-verification kind is still available for unconfirmed approvals', () => {
+    // No program currently uses needs-verification, but the type must accept it.
+    // This compiles only if 'needs-verification' is in the ProgramApprovalKind union.
+    const kind: import('../healthcare/types').ProgramApprovalKind = 'needs-verification';
+    expect(kind).toBe('needs-verification');
+  });
+
+  test('verified-official-source verifiedOn does not automatically imply regulatory approval', () => {
+    // BRCC PN is verified-official-source (institution page confirmed) but approval is provisional.
+    const p = getProgramById('brcc-pn');
+    expect(p?.verificationStatus).toBe('verified-official-source');
+    expect(p?.approvals[0]?.kind).toBe('provisional');
+  });
+
+  test('state-board-approved appears only on programs with direct official evidence', () => {
+    for (const p of HEALTHCARE_PROGRAMS) {
+      for (const approval of p.approvals) {
+        if (approval.kind === 'state-board-approved') {
+          // Must have an evidenceUrl
+          expect(approval.evidenceUrl).not.toBeNull();
+        }
+      }
+    }
   });
 });

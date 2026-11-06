@@ -466,7 +466,7 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
       kind: 'education',
       title: 'Complete required CNA training',
       description:
-        'Louisiana requires a minimum of 75 hours of training including classroom instruction and supervised practical training. Confirm current hour requirements with LDH and the program.',
+        'Louisiana NATCEP rules require a minimum 80-hour core curriculum. The clinical-site orientation is a separate minimum requirement not counted toward the 80-hour core. Confirm current hour requirements and program schedule with LDH and the program.',
       requiresConfirmation: true,
     },
     {
@@ -515,10 +515,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'cna-univ-3',
       kind: 'education',
-      title: 'Complete required CNA training (minimum 75 hours)',
+      title: 'Complete required CNA training (minimum 80-hour core)',
       description:
-        'Louisiana requires a minimum of 75 hours of training including classroom instruction and supervised practical training.',
-      requiresConfirmation: false,
+        'Louisiana NATCEP rules require a minimum 80-hour core curriculum. The clinical-site orientation is a separate requirement not counted toward the core. Confirm current requirements with LDH and the program.',
+      requiresConfirmation: true,
     },
     {
       id: 'cna-univ-4',
@@ -566,10 +566,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'cna-adult-3',
       kind: 'education',
-      title: 'Complete required CNA training (minimum 75 hours)',
+      title: 'Complete required CNA training (minimum 80-hour core)',
       description:
-        'Louisiana requires a minimum of 75 hours of training including classroom instruction and supervised practical training.',
-      requiresConfirmation: false,
+        'Louisiana NATCEP rules require a minimum 80-hour core curriculum. The clinical-site orientation is a separate requirement not counted toward the core. Confirm current requirements with LDH and the program.',
+      requiresConfirmation: true,
     },
     {
       id: 'cna-adult-4',
@@ -619,10 +619,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'ma-hs-3',
       kind: 'preparation',
-      title: 'Compare certificate (9–12 months) and associate degree (2 years) options',
+      title: 'Compare Medical Assistant certificate and associate degree options',
       description:
-        'Both lead to entry-level MA roles. Certificate programs are faster; associate degrees offer broader preparation.',
-      requiresConfirmation: false,
+        'Both lead to entry-level MA roles. Certificate programs offer faster entry; associate degrees provide broader preparation. Program duration varies by provider — confirm the current schedule directly with each institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'ma-hs-4',
@@ -670,10 +670,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'ma-univ-2',
       kind: 'preparation',
-      title: 'Compare certificate and associate degree options',
+      title: 'Compare Medical Assistant certificate and associate degree options',
       description:
-        'Certificate programs (9–12 months) are faster. Associate degrees (2 years) offer broader preparation. Consider your existing college credit when choosing.',
-      requiresConfirmation: false,
+        'Certificate programs offer faster entry; associate degrees offer broader preparation. Program duration varies by provider — confirm the current schedule directly with each institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'ma-univ-3',
@@ -721,10 +721,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'ma-adult-2',
       kind: 'preparation',
-      title: 'Compare certificate (9–12 months) and associate degree (2 years) options',
+      title: 'Compare Medical Assistant certificate and associate degree options',
       description:
-        'Both lead to entry-level MA roles. Certificate programs offer faster entry; associate degrees offer broader preparation.',
-      requiresConfirmation: false,
+        'Both lead to entry-level MA roles. Certificate programs offer faster entry; associate degrees offer broader preparation. Program duration varies by provider — confirm the current schedule directly with each institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'ma-adult-3',
@@ -782,10 +782,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'phleb-hs-3',
       kind: 'education',
-      title: 'Complete phlebotomy training (1–6 months)',
+      title: 'Complete phlebotomy training',
       description:
-        'Training typically includes classroom instruction on venipuncture technique, specimen handling, infection control, and supervised practice.',
-      requiresConfirmation: false,
+        'Training includes classroom instruction on venipuncture technique, specimen handling, infection control, and supervised practice. Program duration varies by provider — confirm the current schedule and required hours directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'phleb-hs-4',
@@ -825,10 +825,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'phleb-univ-2',
       kind: 'education',
-      title: 'Complete phlebotomy training (1–6 months)',
+      title: 'Complete phlebotomy training',
       description:
-        'Training typically includes classroom instruction and supervised venipuncture practice.',
-      requiresConfirmation: false,
+        'Training includes classroom instruction and supervised venipuncture practice. Program duration varies by provider — confirm the current schedule and required hours directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'phleb-univ-3',
@@ -868,10 +868,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'phleb-adult-2',
       kind: 'education',
-      title: 'Complete phlebotomy training (1–6 months)',
+      title: 'Complete phlebotomy training',
       description:
-        'Training typically includes classroom instruction and supervised venipuncture practice.',
-      requiresConfirmation: false,
+        'Training includes classroom instruction and supervised venipuncture practice. Program duration varies by provider — confirm the current schedule and required hours directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'phleb-adult-3',
@@ -929,10 +929,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'pct-hs-4',
       kind: 'education',
-      title: 'Complete PCT training (3–6 months)',
+      title: 'Complete PCT training',
       description:
-        'Training covers patient care skills, EKG interpretation, and phlebotomy procedures.',
-      requiresConfirmation: false,
+        'Training covers patient care skills, EKG interpretation, and phlebotomy procedures. Program duration varies by provider — confirm the current schedule directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'pct-hs-5',
@@ -980,10 +980,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'pct-univ-4',
       kind: 'education',
-      title: 'Complete PCT training (3–6 months)',
+      title: 'Complete PCT training',
       description:
-        'Training covers patient care skills, EKG interpretation, and phlebotomy procedures.',
-      requiresConfirmation: false,
+        'Training covers patient care skills, EKG interpretation, and phlebotomy procedures. Program duration varies by provider — confirm the current schedule directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'pct-univ-5',
@@ -1031,10 +1031,10 @@ const MILESTONES: Partial<Record<string, readonly PathwayMilestone[]>> = {
     {
       id: 'pct-adult-4',
       kind: 'education',
-      title: 'Complete PCT training (3–6 months)',
+      title: 'Complete PCT training',
       description:
-        'Training covers patient care skills, EKG interpretation, and phlebotomy.',
-      requiresConfirmation: false,
+        'Training covers patient care skills, EKG interpretation, and phlebotomy. Program duration varies by provider — confirm the current schedule directly with the institution.',
+      requiresConfirmation: true,
     },
     {
       id: 'pct-adult-5',

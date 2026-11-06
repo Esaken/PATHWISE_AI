@@ -191,7 +191,7 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
         typicalDurationMonths: { min: 1, max: 2 },
         minimumEducationPrerequisite: 'Minimum age requirements vary by program; verify directly',
         notes:
-          'Louisiana requires a minimum of 75 hours of training (classroom instruction and supervised practical training). Confirm current requirements with the Louisiana Department of Health.',
+          'Louisiana NATCEP rules require a minimum 80-hour core curriculum (classroom instruction and supervised practical training). The clinical-site orientation is a separate minimum requirement not counted toward the 80-hour core. Confirm current requirements with the Louisiana Department of Health (ldh.la.gov).',
       },
     ],
     eligibleLearnerCategories: ['high-school', 'university', 'adult'],
@@ -214,7 +214,7 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
     relatedCareerIds: ['lpn', 'rn', 'patient-care-technician'],
     warnings: [
       'CNA nurse aide registry placement is distinct from RN or LPN professional licensure. These are different credentials with different scopes of practice.',
-      'Louisiana requires state-approved training, a competency evaluation, and registry placement. Verify current requirements with the Louisiana Department of Health (ldh.la.gov).',
+      'Louisiana NATCEP rules require a minimum 80-hour core curriculum plus a separate clinical-site orientation. Verify current requirements with the Louisiana Department of Health (ldh.la.gov).',
       'CNA certification expires two years from the certification date. Confirm renewal and maintenance requirements with LDH.',
       'Some employers conduct background checks. Verify employer-specific requirements before enrolling.',
     ],
@@ -242,19 +242,23 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
         routeId: 'ma-certificate',
         kind: 'certificate',
         label: 'Medical Assistant Certificate or Diploma',
-        description: 'Typically 9–12 months. Covers both clinical and administrative skills.',
-        typicalDurationMonths: { min: 9, max: 12 },
+        description:
+          'Covers both clinical and administrative skills. Program duration varies by provider; confirm the current schedule directly with the institution.',
+        typicalDurationMonths: null,
         minimumEducationPrerequisite: 'High school diploma or GED',
-        notes: 'Program accreditation (CAAHEP or ABHES) is typically required to sit for major national certification exams (CMA, RMA).',
+        notes:
+          'Program accreditation (CAAHEP or ABHES) is typically required to sit for major national certification exams (CMA, RMA). Confirm accreditation and duration directly with each program.',
       },
       {
         routeId: 'ma-associate',
         kind: 'degree',
         label: 'Associate Degree in Medical Assisting',
-        description: 'Typically a 2-year program. Provides broader preparation in medical sciences.',
-        typicalDurationMonths: { min: 18, max: 24 },
+        description:
+          'Provides broader preparation in medical sciences and clinical skills. Program duration varies by provider; confirm the current schedule directly with the institution.',
+        typicalDurationMonths: null,
         minimumEducationPrerequisite: 'High school diploma or GED',
-        notes: 'Confirm accreditation status of any program before enrolling.',
+        notes:
+          'Confirm accreditation status (CAAHEP or ABHES) and program duration directly with each institution before enrolling.',
       },
     ],
     eligibleLearnerCategories: ['high-school', 'university', 'adult'],
@@ -306,11 +310,11 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
         kind: 'certificate',
         label: 'Phlebotomy Training Certificate',
         description:
-          'Programs typically range from 1 to 6 months including classroom instruction and supervised practicum hours.',
-        typicalDurationMonths: { min: 1, max: 6 },
+          'Covers venipuncture technique, specimen handling, and infection control. Includes supervised practicum hours. Program duration varies by provider; confirm the current schedule and required hours directly with the institution.',
+        typicalDurationMonths: null,
         minimumEducationPrerequisite: 'High school diploma or GED (verify by program)',
         notes:
-          'Practicum hours in a clinical setting are typically required. Confirm required hours with the specific program.',
+          'Practicum hours in a clinical setting are typically required. Confirm required clinical hours and total program duration with the specific program before enrolling.',
       },
     ],
     eligibleLearnerCategories: ['high-school', 'university', 'adult'],
@@ -361,11 +365,11 @@ export const HEALTHCARE_CAREERS: readonly HealthcareCareer[] = [
         kind: 'certificate',
         label: 'Patient Care Technician Certificate',
         description:
-          'Typically 3–6 months; often includes or requires CNA certification, with added EKG and phlebotomy components.',
-        typicalDurationMonths: { min: 3, max: 6 },
+          'Often includes or requires CNA certification, with added EKG and phlebotomy components. Program duration varies by provider; confirm the current schedule directly with the institution.',
+        typicalDurationMonths: null,
         minimumEducationPrerequisite: 'High school diploma or GED; CNA certification often preferred or required',
         notes:
-          'Many employers require CNA certification as a foundation. Confirm prerequisite requirements with the specific program and target employers.',
+          'Many employers require CNA certification as a foundation. Confirm prerequisite requirements, program duration, and employer recognition with the specific program and target employers.',
       },
     ],
     eligibleLearnerCategories: ['high-school', 'university', 'adult'],

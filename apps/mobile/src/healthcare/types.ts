@@ -91,6 +91,7 @@ export type ProgramApprovalKind =
   | 'state-board-approved'
   | 'regionally-accredited'
   | 'programmatically-accredited'
+  | 'provisional'
   | 'needs-verification';
 
 export type ProgramApproval = {
