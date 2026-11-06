@@ -632,9 +632,8 @@ function CompletionScreen({ learnerType }: { learnerType: LearnerType }) {
               <View style={styles.completionCard}>
                 <Text style={styles.completionCardTitle}>What comes next</Text>
                 <Text style={styles.completionCardBody}>
-                  In a future update, Pathwise AI will use your selections to surface a
-                  personalised learning roadmap and curated opportunities. That feature is not
-                  yet available — check back soon.
+                  Pathwise AI will now show personalized opportunity recommendations based on
+                  your selections. You can browse the full catalog at any time.
                 </Text>
               </View>
               <Pressable
@@ -744,7 +743,7 @@ export default function OnboardingWizard() {
   useEffect(() => {
     if (state.step === 'complete') {
       setAnswers(state.answers);
-      router.replace('/opportunities' as any);
+      router.replace('/recommendations' as any);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.step]);

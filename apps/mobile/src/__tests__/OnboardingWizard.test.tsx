@@ -231,7 +231,7 @@ describe('high-school happy path', () => {
     expect(api.getByText(/you're all set/i)).toBeTruthy();
   });
 
-  it('completion screen does not fabricate a roadmap', async () => {
+  it('completion screen describes the recommendations feature', async () => {
     const user = setupUser();
     const api = await renderWizard();
     await user.press(api.getByText('10th grade'));
@@ -242,7 +242,7 @@ describe('high-school happy path', () => {
     await user.press(api.getByText('Free only'));
     await user.press(api.getByTestId('step-next-button'));
     await user.press(api.getByTestId('submit-button'));
-    expect(api.getByText(/not yet available/i)).toBeTruthy();
+    expect(api.getByText(/personalized opportunity recommendations/i)).toBeTruthy();
   });
 });
 
