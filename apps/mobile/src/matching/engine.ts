@@ -108,6 +108,21 @@ function isLouisianaSpecific(opp: Opportunity): boolean {
   return juris.includes('Louisiana') || juris.includes('LA');
 }
 
+// An opportunity must clear this gate to appear in personalized recommendations.
+// Budget compatibility and learner-category membership alone do not qualify an
+// item — they can only add score to an already-qualifying recommendation.
+function hasSubstantiveMatch(
+  opp: Opportunity,
+  gt: readonly Topic[],
+  ct: readonly Topic[],
+  inLA: boolean,
+): boolean {
+  if (gt.length > 0 && topicsIntersect(opp.topics, gt)) return true;
+  if (ct.length > 0 && topicsIntersect(opp.topics, ct)) return true;
+  if (inLA && isLouisianaSpecific(opp)) return true;
+  return false;
+}
+
 // ─── Human-readable label helpers (for match reason text) ────────────────────
 
 const GOAL_LABELS: Record<string, string> = {
@@ -205,6 +220,10 @@ export function recommend(
     // Hard eligibility constraint: learner category must be explicitly listed.
     if (!opp.learnerEligibility.categories.includes(learnerCat)) continue;
 
+    // Substantive relevance gate: at least one goal, career/study-area, or
+    // applicable-location signal must match. Budget alone cannot qualify.
+    if (!hasSubstantiveMatch(opp, gt, ct, inLA)) continue;
+
     let score = W.EDUCATION; // baseline for every learner-eligible item
     const matchReasons: MatchReason[] = [];
 
@@ -242,7 +261,7 @@ export function recommend(
       opportunity: opp,
       score,
       matchReasons,
-      eligibilityStatus: 'eligible',
+      eligibilityStatus: 'category-compatible',
       eligibilityCaveats: buildCaveats(opp, inLA),
     });
   }

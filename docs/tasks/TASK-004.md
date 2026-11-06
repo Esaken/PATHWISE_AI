@@ -1,9 +1,9 @@
 # TASK-004: Personalized Opportunity Matching Engine
 
-**Status:** Implementation complete — pending independent QA  
-**Branch:** `feature/task-004-opportunity-matching`  
-**Base:** `main` at `20145ec`  
-**Owner:** Claude Code  
+**Status:** Implementation complete — pending independent QA
+**Branch:** `feature/task-004-opportunity-matching`
+**Base:** `main` at `20145ec`
+**Owner:** Claude Code
 **Reviewer:** Codex CLI
 
 ---
@@ -37,7 +37,7 @@ src/
     recommendations/
       index.tsx    — Recommendations screen (Expo Router route /recommendations)
   __tests__/
-    matching.test.ts — 51 unit tests for the matching engine
+    matching.test.ts — 85 unit tests for the matching engine
 ```
 
 The engine is a pure function with no side effects, no I/O, and no dependency on React. It can be called from any context including server-side rendering or background workers.
@@ -52,7 +52,17 @@ Navigation change: `app/onboarding/[type].tsx` now routes to `/recommendations` 
 
 An opportunity is excluded entirely if `opportunity.learnerEligibility.categories` does not include the learner's type (`high-school`, `university`, or `adult`). This check runs before any scoring. A high score never overrides this constraint.
 
-### Step 2 — Scoring
+### Step 2 — Substantive relevance gate
+
+An opportunity must have at least one substantive match signal to appear in personalized recommendations:
+
+- Opportunity topics intersect the learner's goal-derived topics, OR
+- Opportunity topics intersect the learner's career/study-area-derived topics, OR
+- The opportunity is jurisdiction-specific to the learner's selected location (Louisiana).
+
+**Budget compatibility and learner-category membership alone cannot qualify an opportunity.** A learner whose profile matches no catalog topics or location receives the empty-state ("No recommendations yet") and a link to the full catalog. This prevents irrelevant opportunities from appearing as personalized matches.
+
+### Step 3 — Scoring
 
 Each passing opportunity receives a score (0–100) built from five independent components:
 
@@ -66,7 +76,7 @@ Each passing opportunity receives a score (0–100) built from five independent 
 
 Maximum score: 100. Minimum score for any returned item: 15 (education baseline).
 
-### Step 3 — Sort
+### Step 4 — Sort
 
 Results are sorted:
 1. Score descending
@@ -80,8 +90,27 @@ This sort is deterministic: identical inputs always produce identical output.
 
 ## Eligibility rules
 
+### Category compatibility versus confirmed eligibility
+
+The engine assigns `eligibilityStatus: 'category-compatible'` to every recommendation. This status means:
+
+> The learner's type is listed in `opportunity.learnerEligibility.categories`.
+
+It does **not** mean:
+- Prerequisites have been verified as satisfied.
+- Provider-specific enrollment requirements have been checked.
+- Institutional credit policies have been confirmed.
+- Employer conditions or applicable law have been verified.
+
+Category membership is the only eligibility fact the engine can confirm from catalog data. All other conditions must be verified by the learner with the provider, institution, or employer. Recommendation scores never imply confirmed eligibility.
+
+The status `'eligibility-unconfirmed'` is reserved in the type for future catalog records with explicit prerequisites that have not been independently satisfied.
+
 ### Hard constraints (exclude before scoring)
 - Learner category not in `opportunity.learnerEligibility.categories`
+
+### Substantive relevance (exclude before scoring)
+- No goal-topic, career-topic, or location match (see Step 2 above)
 
 ### Eligibility caveats (surface to user; never block)
 - `credit-not-guaranteed` — appears on `possible-institution-approval` opportunities; label is the catalog's own disclaimer text
@@ -128,10 +157,10 @@ Caveats are drawn from catalog fields only. No claim is invented.
 
 ## Data limitations
 
-- The catalog contains 5 verified records. Learners with interests in healthcare, business, arts, trades, and many other areas will receive only the education-baseline score (15 pts) on any eligible item — they will still see recommendations, but without interest-specific reasons.
+- The catalog contains 5 verified records. Learners with interests in healthcare, business, arts, trades, and many other areas have no catalog topic matches; the substantive-match gate will produce an empty recommendations list for these profiles. The full catalog remains accessible at `/opportunities`.
 - University study areas beyond `computer-science` and `engineering` produce no career topics with the current catalog. This will improve as the catalog grows.
-- `responsible-vendor` training ranks highly for Louisiana adult learners with `job-training` goal even when their career interest is unrelated to hospitality. This is by design: the training is a statutory employment requirement for the described learner type.
-- Scores do not imply verified eligibility. All returned items have `eligibilityStatus: 'eligible'` based on the category check; individual enrollment requirements must be confirmed with the provider.
+- `responsible-vendor` training qualifies for Louisiana adult learners with `job-training` goal (goal-topic match) regardless of career interest. This is by design: the training is a statutory employment requirement for the described learner type.
+- `eligibilityStatus: 'category-compatible'` does not imply all enrollment conditions are met. Individual prerequisites, provider conditions, and institutional or employer requirements must be confirmed separately.
 
 ---
 
@@ -151,22 +180,24 @@ Back navigation works at every step. The recommendations screen redirects to `/`
 
 ## Test coverage
 
-File: `src/__tests__/matching.test.ts` — 51 tests in 15 suites.
+File: `src/__tests__/matching.test.ts` — 85 tests in 17 suites.
 
 | Suite | Coverage |
 |---|---|
-| High school learner — explore-credit | Category exclusion, goal/career scoring, budget reason |
-| High school learner — build-career-skills | Goals with no topic mapping, career reasons only |
+| Substantive match qualification | Budget-only excluded, category-only excluded, goal/career/location-only qualify |
+| Louisiana hospitality compliance profile | Cisco excluded; RV only; exact T4-B1 reproduction |
+| High school learner — explore-credit | Exact scores (MS=65, CLEP=55, Cisco=50); $97 not free |
+| High school learner — build-career-skills | 2 results only; Modern States/CLEP excluded (no match) |
 | University learner — explore-credit | Top-2 ordering, credit caveats on CLEP/Modern States |
-| Adult — technology, Texas | Exclusion of uni-only items, location caveat for non-LA |
-| Adult — technology, Louisiana | Location match reason, no location caveat |
-| Adult — something-else, Louisiana | RV training ranks first; goal + location reasons |
-| Hard eligibility constraint | All learner types exclude wrong-category items |
-| Eligibility status | All items eligible; credit never presented as guaranteed |
-| Missing optional fields | Null careerInterest/goal/budget — no crash, no fabricated reasons |
-| Score bounds | All scores in [0, 100] across 9 answer profiles |
+| Adult — technology, Texas | 3 results; RV=65 pts; location-dependent caveat |
+| Adult — technology, Louisiana | RV=75 pts; Cisco=50 pts; location match/caveat |
+| Hard eligibility constraint | Category exclusion; unsupported learner type returns [] |
+| Eligibility status (T4-B2) | category-compatible; not implying prerequisites satisfied |
+| Missing optional fields | Null profiles → empty recommendations; null budget → no reason |
+| Unknown-price budget handling | Unknown ≠ free; unknown matches flexible; not up-to-25/100 |
+| Score bounds | All scores in [0, 100] across 7 substantive-match profiles |
 | Determinism | Same answers → identical order and scores |
-| Stable tie-breaking | Tied-score items sorted by title ascending |
+| Stable tie-breaking | Assert tie first (40=40), then title-ascending resolution |
 | Explanation accuracy | Goal/career/budget/location reasons only when backed by data |
 | Catalog integrity | 5 records, expected IDs, no mutation |
 | Empty catalog | Returns [] for all learner types |
@@ -176,9 +207,10 @@ File: `src/__tests__/matching.test.ts` — 51 tests in 15 suites.
 ## Known limitations
 
 1. **Browser-level UI testing not performed.** The recommendations screen is TypeScript-validated and Expo-web-exported, but interactive Chromium testing (keyboard navigation, focus indicators, accessibility tree) requires independent QA verification.
-2. **Narrow topic coverage.** Only `technology` and `engineering` career interests produce catalog topic matches. Other interests receive the education baseline score only.
+2. **Many profiles produce empty recommendations.** Only `technology` and `engineering` career interests and `prepare-college`/`explore-credit`/`job-training` goals map to current catalog topics. Healthcare, business, arts, trades, and many other profiles will reach the empty state and be directed to the full catalog.
 3. **No learner-to-learner differentiation within a category.** A 9th grader and a 12th grader receive the same recommendations; grade is not used in scoring (the catalog does not distinguish by grade level).
 4. **Unknown-price items with non-flexible budgets.** Louisiana RV training has an unknown price and will only receive a budget match reason from a learner who selected `flexible`.
+5. **`category-compatible` does not imply all requirements are satisfied.** Prerequisites, employer conditions, institutional policies, and provider-specific requirements are not verified by the engine. All recommendations carry this caveat regardless of score.
 
 ---
 

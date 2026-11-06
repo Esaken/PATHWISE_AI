@@ -1,6 +1,12 @@
 import type { MatchReason, Opportunity } from '@/catalog/types';
 
-export type EligibilityStatus = 'eligible' | 'unknown';
+// 'category-compatible' — the learner's type is listed in the opportunity's
+// learnerEligibility.categories. No prerequisites, provider conditions,
+// institutional policies, or employer requirements have been independently
+// verified. This status does not imply the learner is fully eligible to enrol.
+// 'eligibility-unconfirmed' — reserved for future records with explicit
+// prerequisites that have not been verified as satisfied.
+export type EligibilityStatus = 'category-compatible' | 'eligibility-unconfirmed';
 
 export type EligibilityCaveatKind =
   | 'credit-not-guaranteed'
