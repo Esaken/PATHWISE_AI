@@ -1,11 +1,23 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
- */
-
 import '@/global.css';
 
 import { Platform } from 'react-native';
+
+export const BrandColors = {
+  heroBg: '#1E1458',
+  primary: '#6C5CE7',
+  primaryDark: '#5A4CD6',
+  primaryDisabled: '#B5AEE2',
+  surface: '#F5F3FF',
+  cardBg: '#FFFFFF',
+  cardBorderDefault: '#E2DCFF',
+  cardBorderSelected: '#6C5CE7',
+  textOnPurple: '#FFFFFF',
+  textSubtleOnPurple: '#C4B9F9',
+  textPrimary: '#1A0F3C',
+  textSecondary: '#6E6193',
+  iconBg: '#EDE9FF',
+  checkBg: '#6C5CE7',
+} as const;
 
 export const Colors = {
   light: {
