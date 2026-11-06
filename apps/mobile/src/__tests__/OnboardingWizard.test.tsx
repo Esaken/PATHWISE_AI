@@ -242,7 +242,7 @@ describe('high-school happy path', () => {
     await user.press(api.getByText('Free only'));
     await user.press(api.getByTestId('step-next-button'));
     await user.press(api.getByTestId('submit-button'));
-    expect(api.getByText(/personalized opportunity recommendations/i)).toBeTruthy();
+    expect(api.getByText(/personalized healthcare career pathways/i)).toBeTruthy();
   });
 });
 

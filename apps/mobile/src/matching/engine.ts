@@ -49,6 +49,7 @@ const GOAL_TOPICS: Partial<Record<string, readonly Topic[]>> = {
 const CAREER_TOPICS: Partial<Record<string, readonly Topic[]>> = {
   technology: ['cybersecurity', 'networking', 'information-technology'],
   engineering: ['networking', 'information-technology'],
+  healthcare: ['nursing', 'practical-nursing', 'nurse-aide', 'allied-health'],
 };
 
 // ─── University study area → catalog topic mapping ───────────────────────────
@@ -56,6 +57,7 @@ const CAREER_TOPICS: Partial<Record<string, readonly Topic[]>> = {
 const STUDY_TOPICS: Partial<Record<string, readonly Topic[]>> = {
   'computer-science': ['cybersecurity', 'networking', 'information-technology'],
   engineering: ['networking', 'information-technology'],
+  'health-medicine': ['nursing', 'practical-nursing', 'nurse-aide', 'allied-health'],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

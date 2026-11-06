@@ -632,8 +632,9 @@ function CompletionScreen({ learnerType }: { learnerType: LearnerType }) {
               <View style={styles.completionCard}>
                 <Text style={styles.completionCardTitle}>What comes next</Text>
                 <Text style={styles.completionCardBody}>
-                  Pathwise AI will now show personalized opportunity recommendations based on
-                  your selections. You can browse the full catalog at any time.
+                  Pathwise AI will now show personalized healthcare career pathways and
+                  opportunity recommendations based on your selections. You can browse the full
+                  catalog at any time.
                 </Text>
               </View>
               <Pressable
@@ -743,7 +744,7 @@ export default function OnboardingWizard() {
   useEffect(() => {
     if (state.step === 'complete') {
       setAnswers(state.answers);
-      router.replace('/recommendations' as any);
+      router.replace('/healthcare' as any);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.step]);

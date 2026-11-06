@@ -5,7 +5,11 @@ export type Topic =
   | 'information-technology'
   | 'alternative-credit'
   | 'responsible-vendor'
-  | 'career-skills';
+  | 'career-skills'
+  | 'nursing'
+  | 'practical-nursing'
+  | 'nurse-aide'
+  | 'allied-health';
 export type OpportunityCategory =
   | 'course'
   | 'exam-preparation'
