@@ -192,7 +192,10 @@ The `delgado-cna` program retains its `needs-recheck` verification status and it
 
 ## 6. New commit SHA
 
-This section will be updated with the actual SHA once the commit is created below.
+`31ed314` — `fix: web release remediation — resolve AUD-B1 through AUD-B4 for Cloudflare Pages`
+
+Branch: `feature/task-005-healthcare-pathways`
+Parent: `b8a29b4`
 
 ---
 
