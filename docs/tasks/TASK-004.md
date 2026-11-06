@@ -54,13 +54,12 @@ An opportunity is excluded entirely if `opportunity.learnerEligibility.categorie
 
 ### Step 2 — Substantive relevance gate
 
-An opportunity must have at least one substantive match signal to appear in personalized recommendations:
+An opportunity must have at least one topical match signal to appear in personalized recommendations:
 
 - Opportunity topics intersect the learner's goal-derived topics, OR
-- Opportunity topics intersect the learner's career/study-area-derived topics, OR
-- The opportunity is jurisdiction-specific to the learner's selected location (Louisiana).
+- Opportunity topics intersect the learner's career/study-area-derived topics.
 
-**Budget compatibility and learner-category membership alone cannot qualify an opportunity.** A learner whose profile matches no catalog topics or location receives the empty-state ("No recommendations yet") and a link to the full catalog. This prevents irrelevant opportunities from appearing as personalized matches.
+**Location, budget, and learner-category membership alone cannot qualify an opportunity.** A learner whose profile matches no catalog topics receives the empty-state ("No recommendations yet") and a link to the full catalog. Location is a ranking signal only: it may add up to 10 points to an already-qualified recommendation but does not independently pass the gate.
 
 ### Step 3 — Scoring
 
@@ -110,7 +109,7 @@ The status `'eligibility-unconfirmed'` is reserved in the type for future catalo
 - Learner category not in `opportunity.learnerEligibility.categories`
 
 ### Substantive relevance (exclude before scoring)
-- No goal-topic, career-topic, or location match (see Step 2 above)
+- No goal-topic or career/study-area-topic match (see Step 2 above)
 
 ### Eligibility caveats (surface to user; never block)
 - `credit-not-guaranteed` — appears on `possible-institution-approval` opportunities; label is the catalog's own disclaimer text
@@ -131,7 +130,7 @@ Caveats are drawn from catalog fields only. No claim is invented.
 
 **Budget compatibility (10%)** is a convenience signal, not a correctness constraint. An opportunity outside budget may still be valuable.
 
-**Location relevance (10%)** is narrow: it only fires for Louisiana-specific opportunities with Louisiana adult learners, matching the current catalog's one jurisdiction-specific record.
+**Location relevance (10%)** is a ranking signal only. It fires for Louisiana-specific opportunities when the learner selected Louisiana, adding up to 10 points to an already-topically-qualified result. It does not independently qualify an opportunity: a learner in Louisiana whose goal and career interests produce no catalog topic matches receives zero recommendations regardless of location.
 
 ---
 

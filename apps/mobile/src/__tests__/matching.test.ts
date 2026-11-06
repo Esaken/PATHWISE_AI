@@ -167,18 +167,31 @@ describe('substantive match qualification — T4-B1', () => {
     });
   });
 
-  it('Louisiana location match qualifies responsible-vendor training', () => {
-    const locationOnly: OnboardingAnswers = {
+  it('location-only profile returns empty recommendations (T4-B3 adversarial case)', () => {
+    // Healthcare adult in Louisiana: neither 'build-general-skills' nor
+    // 'healthcare' maps to any catalog topic. Location alone must not qualify
+    // Responsible Vendor Training. T4-B3 negative test (Test A).
+    const healthcareLA: OnboardingAnswers = {
       learnerType: 'adult',
-      careerGoal: 'something-else',  // no career topics
-      careerGoalOther: 'Undecided',
-      goal: 'build-general-skills',  // no goal topics
-      budget: null,
+      careerGoal: 'healthcare',
+      careerGoalOther: '',
+      goal: 'build-general-skills',
+      budget: 'flexible',
       stateRegion: 'LA',
     };
-    const recs = recommend(locationOnly, CATALOG);
-    expect(ids(recs)).toContain(IDS.rv);
-    const rv = recs.find((r) => r.opportunity.id === IDS.rv);
+    const recs = recommend(healthcareLA, CATALOG);
+    expect(recs).toHaveLength(0);
+    expect(ids(recs)).not.toContain(IDS.rv);
+  });
+
+  it('location adds ranking points only after topical qualification (Test F)', () => {
+    // ADULT_RV_LA qualifies via goal (job-training → responsible-vendor topic).
+    // Louisiana then adds +10 to an already-qualified item → score 75.
+    // This confirms location is a ranking signal, not a gate signal.
+    const rv = recommend(ADULT_RV_LA, CATALOG).find((r) => r.opportunity.id === IDS.rv);
+    expect(rv).toBeDefined();
+    expect(rv?.score).toBe(75); // 15 education + 40 goal + 10 budget + 10 location
+    expect(rv?.matchReasons.some((m) => m.field === 'goal')).toBe(true);
     expect(rv?.matchReasons.some((m) => m.field === 'location')).toBe(true);
   });
 });

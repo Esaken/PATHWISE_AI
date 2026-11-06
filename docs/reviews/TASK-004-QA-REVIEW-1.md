@@ -1,9 +1,9 @@
 # TASK-004 Independent QA Review 1
 
-**Branch:** `feature/task-004-opportunity-matching`  
-**Implementation:** `9e46aa4`  
-**Base:** `main` at `20145ec`  
-**Review date:** 2026-11-05  
+**Branch:** `feature/task-004-opportunity-matching`
+**Implementation:** `9e46aa4`
+**Base:** `main` at `20145ec`
+**Review date:** 2026-11-05
 **Verdict:** **FAIL**
 
 TASK-004 is not ready for integration. The implementation is deterministic, technically stable, and passes all automated gates, but it presents category-compatible opportunities with no goal, career, study-area, or location relevance as personalized recommendations. It also assigns the internal status `eligible` based only on broad learner-category membership. These are recommendation-accuracy and eligibility-safety defects, not inherited TASK-001 issues.
@@ -12,7 +12,7 @@ TASK-004 is not ready for integration. The implementation is deterministic, tech
 
 ### T4-B1 — Topically irrelevant opportunities are presented as personalized recommendations
 
-**Severity:** High / blocking  
+**Severity:** High / blocking
 **Files:** `apps/mobile/src/matching/engine.ts:208`, `apps/mobile/src/matching/engine.ts:229`, `apps/mobile/src/matching/engine.ts:241`, `apps/mobile/src/app/recommendations/index.tsx:129`
 
 Every category-compatible record starts with 15 points and is returned even when it has no goal, career/study-area, or location match. A flexible budget can add another 10 points to an otherwise irrelevant record. The UI then labels the complete result set **Your Recommendations**.
@@ -34,7 +34,7 @@ This becomes more misleading for healthcare, arts, business, trades, or missing-
 
 ### T4-B2 — Broad category membership is recorded as confirmed `eligible`
 
-**Severity:** High / blocking  
+**Severity:** High / blocking
 **Files:** `apps/mobile/src/matching/types.ts:3`, `apps/mobile/src/matching/engine.ts:205`, `apps/mobile/src/matching/engine.ts:245`, `apps/mobile/src/__tests__/matching.test.ts:286`
 
 The hard filter correctly excludes records whose catalog category does not include the learner type. However, every remaining record is assigned `eligibilityStatus: 'eligible'`. Learner-category compatibility does not prove that prerequisites, employer conditions, institutional policy, or provider-specific requirements are satisfied. The test at `matching.test.ts:287-293` explicitly requires this unsafe interpretation.
