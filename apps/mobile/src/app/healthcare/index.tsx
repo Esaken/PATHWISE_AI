@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type KeyDownEvent,
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,9 +55,20 @@ function CareerCard({
 }) {
   const [focused, setFocused] = useState(false);
 
+  // React Native Web renders Pressable as div[role=button]; browsers only fire
+  // click on Enter for native <button> elements, not divs. RNW handles Space
+  // natively for role="button". Handle Enter explicitly to avoid missing both.
+  function handleKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      onPress();
+    }
+  }
+
   return (
     <Pressable
       onPress={onPress}
+      onKeyDown={handleKeyDown}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       accessibilityRole="button"
@@ -105,6 +117,20 @@ export default function HealthcareScreen() {
 
   const learnerLabel = LEARNER_LABELS[answers.learnerType] ?? answers.learnerType;
 
+  function handleRecLinkKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      (router.push as any)('/recommendations');
+    }
+  }
+
+  function handleCatalogLinkKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      (router.push as any)('/opportunities');
+    }
+  }
+
   function renderItem({ item }: { item: HealthcareCareer }) {
     return (
       <CareerCard
@@ -131,7 +157,8 @@ export default function HealthcareScreen() {
 
           <View style={styles.navRow}>
             <Pressable
-              onPress={() => router.push('/recommendations' as any)}
+              onPress={() => (router.push as any)('/recommendations')}
+              onKeyDown={handleRecLinkKeyDown}
               onFocus={() => setRecLinkFocused(true)}
               onBlur={() => setRecLinkFocused(false)}
               accessibilityRole="link"
@@ -142,7 +169,8 @@ export default function HealthcareScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push('/opportunities' as any)}
+              onPress={() => (router.push as any)('/opportunities')}
+              onKeyDown={handleCatalogLinkKeyDown}
               onFocus={() => setCatalogLinkFocused(true)}
               onBlur={() => setCatalogLinkFocused(false)}
               accessibilityRole="link"

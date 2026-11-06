@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type KeyDownEvent,
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -93,6 +94,13 @@ function ProgramCard({ program }: { program: HealthcareProgram }) {
     Linking.openURL(program.officialUrl).catch(() => {});
   }
 
+  function handleLinkKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      handlePress();
+    }
+  }
+
   return (
     <View style={styles.programCard}>
       <View style={styles.programHeader}>
@@ -140,6 +148,7 @@ function ProgramCard({ program }: { program: HealthcareProgram }) {
 
       <Pressable
         onPress={handlePress}
+        onKeyDown={handleLinkKeyDown}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         accessibilityRole="link"
@@ -166,6 +175,20 @@ export default function PathwayDetailScreen() {
 
   const [backFocused, setBackFocused] = useState(false);
   const [catalogFocused, setCatalogFocused] = useState(false);
+
+  function handleBackKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      router.back();
+    }
+  }
+
+  function handleCatalogKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      (router.push as any)('/opportunities');
+    }
+  }
 
   const career = useMemo(
     () => (careerId ? getCareerById(careerId) : undefined),
@@ -228,6 +251,7 @@ export default function PathwayDetailScreen() {
           <View style={styles.headerInner}>
             <Pressable
               onPress={() => router.back()}
+              onKeyDown={handleBackKeyDown}
               onFocus={() => setBackFocused(true)}
               onBlur={() => setBackFocused(false)}
               accessibilityRole="button"
@@ -238,7 +262,8 @@ export default function PathwayDetailScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => router.push('/opportunities' as any)}
+              onPress={() => (router.push as any)('/opportunities')}
+              onKeyDown={handleCatalogKeyDown}
               onFocus={() => setCatalogFocused(true)}
               onBlur={() => setCatalogFocused(false)}
               accessibilityRole="link"
@@ -389,9 +414,17 @@ function SourceLink({
     Linking.openURL(url).catch(() => {});
   }
 
+  function handleKeyDown(e: KeyDownEvent) {
+    if (e.nativeEvent.key === 'Enter') {
+      e.preventDefault();
+      handlePress();
+    }
+  }
+
   return (
     <Pressable
       onPress={handlePress}
+      onKeyDown={handleKeyDown}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       accessibilityRole="link"

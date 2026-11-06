@@ -1,6 +1,6 @@
 # TASK-005: Healthcare-First Career Pathways
 
-**Status:** Remediation complete (QA Review 1 T5-B1/T5-B2 addressed) — pending independent QA Review 2
+**Status:** Remediation complete (QA Review 4 T5-B4 and TASK-001 B4 addressed) — pending independent QA Review 5
 **Branch:** `feature/task-005-healthcare-pathways`
 **Base:** `main` at `9be4c0a`
 **Owner:** Claude Code
@@ -221,3 +221,112 @@ File: `src/__tests__/healthcare.test.ts` — 168 tests in 15 suites.
 
 No new production dependency was introduced by the TASK-005 diff. The healthcare module uses
 no fetch, Axios, browser storage, cookie, or AsyncStorage.
+
+---
+
+## QA Review 4 Remediation — T5-B4 and TASK-001 B4
+
+**Date:** 2026-11-06
+
+### T5-B4: Healthcare career cards do not activate with Enter key
+
+**Root cause:** React Native Web renders `Pressable` with `accessibilityRole="button"` as
+`div[role=button]`. Browsers synthesize a click on Enter only for native `<button>` elements,
+not `div` elements. RNW handles Space natively for `role="button"` but not Enter.
+
+**Fix applied — `apps/mobile/src/app/healthcare/index.tsx`:**
+- Added `handleKeyDown` to `CareerCard`: checks `e.nativeEvent.key === 'Enter'`,
+  calls `e.preventDefault()` and `onPress()`. Space is NOT handled (RNW does that natively).
+- Applied `onKeyDown={handleKeyDown}` to CareerCard's Pressable.
+- Applied the same pattern to both nav link Pressables in `HealthcareScreen`
+  (recommendations link and catalog link).
+
+**Phase 4 fix applied — `apps/mobile/src/app/healthcare/pathways/[careerId].tsx`:**
+- Added `handleBackKeyDown` (Enter → `router.back()`) to Back button Pressable.
+- Added `handleCatalogKeyDown` (Enter → push `/opportunities`) to catalog link Pressable.
+- Added `handleLinkKeyDown` to `ProgramCard`'s program-link Pressable (Enter → `handlePress()`).
+- Added `handleKeyDown` to `SourceLink` Pressable (Enter → `handlePress()`).
+
+**Chromium verification required (not automated):** The `onKeyDown` handler is wired and unit-tested
+but browser-level Enter activation on `div[role=button]` requires real Chromium verification
+(see QA Review 5). Do not close T5-B4 without that verification.
+
+---
+
+### TASK-001 B4: Welcome screen shows mobile layout at 1440px; Chromium reports hydration error #418
+
+**Root cause:** The original implementation used `useWindowDimensions()` which returns `{width:0}`
+during Expo static export SSR. At 1440px, the first client render returned `{width:1440}`, producing
+a different layout (desktop row) from the server HTML (mobile column). React detected the mismatch
+and reported error #418.
+
+An intermediate fix used `useState(false) + useLayoutEffect` with `setIsDesktop(width >= 768)`
+synchronously in the effect body, which triggered the `react-hooks/set-state-in-effect` ESLint error.
+
+**Fix applied — `apps/mobile/src/app/index.tsx`:**
+Replaced `useState(false) + useLayoutEffect` with `useSyncExternalStore`:
+
+```tsx
+// Module-level (stable identity across renders):
+function subscribeToDimensions(callback: () => void) {
+  const sub = Dimensions.addEventListener('change', callback);
+  return () => sub.remove();
+}
+function getIsDesktopSnapshot() {
+  return Dimensions.get('window').width >= 768;
+}
+function getIsDesktopServerSnapshot() {
+  return false;  // matches SSR output; prevents hydration mismatch
+}
+
+// In component:
+const isDesktop = useSyncExternalStore(
+  subscribeToDimensions,
+  getIsDesktopSnapshot,
+  getIsDesktopServerSnapshot,
+);
+```
+
+`getIsDesktopServerSnapshot = () => false` ensures the SSR HTML and the initial client render
+agree on mobile layout, eliminating error #418. The client snapshot corrects to the actual
+viewport width synchronously before paint via React's `useSyncExternalStore` scheduling.
+
+**Chromium verification required (not automated):** Hydration correctness requires a browser
+load of the production static export. `expo export` succeeding does not prove hydration
+works. QA Review 5 must load the exported `dist/` in real Chromium and confirm:
+- No React hydration error #418 in the console at any viewport
+- Cards render in a row at 1440px on first load
+- Cards render in a column at 390px on first load
+
+---
+
+### Regression tests added
+
+**`apps/mobile/src/__tests__/healthcareKeyboard.test.tsx`** — 19 tests in 3 suites:
+- T5-B4: Enter fires router.push for each career (rn, cna, lpn), fires exactly once,
+  calls preventDefault, Tab does NOT fire, pointer press fires exactly once
+- Accessible names/roles: role="button", labels match "View X pathway", onKeyDown prop exists
+- Phase 4: back button/catalog link onKeyDown props, back button Enter fires router.back(),
+  program link onKeyDown prop, program link Enter calls Linking.openURL
+
+**`apps/mobile/src/__tests__/welcomeLayout.test.tsx`** — 13 tests in 3 suites:
+- Hydration-safe rendering smoke test at width=0
+- Initial selection (High school), Dimensions.addEventListener registered, Get Started button
+- Adult/University card selection via press + waitFor, single selection invariant, 3 radios present
+- Responsive: renders without crash at 390/768/1440/0 px widths
+
+**Note:** These tests verify structural wiring (onKeyDown prop present, handler logic fires).
+They do NOT prove browser-level Enter activation on `div[role=button]`, which requires Chromium.
+
+---
+
+### Post-remediation automated validation results (2026-11-06)
+
+| Gate | Result | Evidence |
+|---|---|---|
+| `npx jest --no-coverage` | PASS, exit 0 | 522 tests, 8 suites, 0 failures |
+| `npx tsc --noEmit` | PASS, exit 0 | No diagnostics |
+| `npm run lint` | PASS, exit 0 | No errors, no warnings |
+| `npm ls --depth=0` | PASS, exit 0 | No unmet/extraneous dependencies |
+| `npx expo export --platform web` | PASS, exit 0 | 9 static routes exported |
+| `git diff --check main...HEAD` | PASS, exit 0 | No trailing whitespace |

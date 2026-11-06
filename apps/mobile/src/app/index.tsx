@@ -1,13 +1,13 @@
-import { useRef, useState } from 'react';
+import { useSyncExternalStore, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import {
+  Dimensions,
   type KeyDownEvent,
   Pressable,
   type PressableInstance,
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -121,11 +121,34 @@ function PathwayCard({ pathway, selected, onSelect, onNavigate, extraStyle, ref 
   );
 }
 
+// useSyncExternalStore helpers — defined at module level so their identities
+// are stable across renders (no re-subscription on every render).
+// getIsDesktopServerSnapshot returns false so the SSR output (mobile layout)
+// matches the initial client render at any viewport, eliminating hydration
+// error #418 that occurred with useWindowDimensions() returning {width:0} on
+// the server but the actual viewport width on the first client render.
+function subscribeToDimensions(callback: () => void) {
+  const sub = Dimensions.addEventListener('change', callback);
+  return () => sub.remove();
+}
+
+function getIsDesktopSnapshot() {
+  return Dimensions.get('window').width >= 768;
+}
+
+function getIsDesktopServerSnapshot() {
+  return false;
+}
+
 export default function WelcomeScreen() {
   const [selected, setSelected] = useState<LearnerType>('high-school');
   const [ctaFocused, setCtaFocused] = useState(false);
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= 768;
+
+  const isDesktop = useSyncExternalStore(
+    subscribeToDimensions,
+    getIsDesktopSnapshot,
+    getIsDesktopServerSnapshot,
+  );
 
   // One ref per card; used to move DOM focus when arrow keys change selection.
   const cardRefs = useRef<(PressableInstance | null)[]>([null, null, null]);
